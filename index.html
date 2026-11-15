@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="author" content="Moshow郑锴" />
+  <meta name="description" content="小火龙数学进化论 MathDragon Evolution · 少儿趣味心算学习网站：加法/减法 × 10/20/100 以内，拖拽答题、凑十法解析、答对80%小火龙进化！作者 Moshow郑锴" />
+  <title>小火龙数学进化论 · MathDragon Evolution</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <!-- 首页：选择模块 -->
+    <section id="screen-home" class="screen">
+      <div class="home-hero">
+        <h1 class="app-title">🐉 小火龙数学进化论</h1>
+        <p class="app-en">MathDragon Evolution</p>
+        <p class="app-slogan">Answer · Learn · Evolve</p>
+        <p class="app-subtitle">每天答 10 题，见证小火龙进化，也见证孩子进化！</p>
+      </div>
+      <div class="module-grid">
+        <button class="module-card module-add" data-module="add">
+          <span class="module-emoji">➕</span>
+          <span class="module-name">加法城堡</span>
+          <span class="module-desc">合在一起，越来越多！</span>
+        </button>
+        <button class="module-card module-sub" data-module="sub">
+          <span class="module-emoji">➖</span>
+          <span class="module-name">减法森林</span>
+          <span class="module-desc">拿走一些，还剩多少？</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 选择难度和题数 -->
+    <section id="screen-setup" class="screen hidden">
+      <button class="btn-back" id="btn-back-home">⬅ 返回</button>
+      <h2 class="setup-title" id="setup-title">选择冒险</h2>
+
+      <div class="setup-block">
+        <h3 class="setup-label">🌈 选择难度</h3>
+        <div class="level-grid" id="level-grid">
+          <button class="level-card" data-level="10">
+            <span class="level-big">10</span><span>以内</span>
+            <span class="level-tag tag-easy">⭐ 简单</span>
+          </button>
+          <button class="level-card" data-level="20">
+            <span class="level-big">20</span><span>以内</span>
+            <span class="level-tag tag-mid">⭐⭐ 进阶</span>
+          </button>
+          <button class="level-card" data-level="100">
+            <span class="level-big">100</span><span>以内</span>
+            <span class="level-tag tag-hard">⭐⭐⭐ 挑战</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <h3 class="setup-label">📝 要答多少题？</h3>
+        <div class="count-grid" id="count-grid">
+          <button class="count-pill" data-count="10">10 题</button>
+          <button class="count-pill" data-count="20">20 题</button>
+          <button class="count-pill" data-count="30">30 题</button>
+          <button class="count-pill" data-count="50">50 题</button>
+          <button class="count-pill" data-count="100">100 题</button>
+        </div>
+      </div>
+
+      <button class="btn-start" id="btn-start" disabled>出发吧！🚀</button>
+    </section>
+
+    <!-- 答题 -->
+    <section id="screen-quiz" class="screen hidden">
+      <header class="quiz-header">
+        <button class="btn-quit" id="btn-quit">🏠</button>
+        <div class="quiz-progress">
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <span class="progress-text" id="progress-text">1 / 10</span>
+        </div>
+        <div class="quiz-score">🌟 <span id="score-num">0</span></div>
+      </header>
+
+      <div class="quiz-stage">
+        <div class="question-bubble" id="question-bubble">把正确答案拖到盒子里吧！</div>
+        <div class="equation" id="equation">
+          <span class="num" id="num-a">11</span>
+          <span class="op" id="num-op">+</span>
+          <span class="num" id="num-b">11</span>
+          <span class="op eq-sign">=</span>
+          <span class="answer-box" id="answer-box"><span id="answer-content">?</span></span>
+        </div>
+        <div class="options" id="options"></div>
+      </div>
+
+      <!-- 错题解析面板 -->
+      <div class="explain-panel hidden" id="explain-panel">
+        <div class="explain-card">
+          <h3 class="explain-title">🔍 一起来看解析</h3>
+          <div class="explain-steps" id="explain-steps"></div>
+          <button class="btn-continue" id="btn-continue">我懂啦，继续！💪</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 结果页 -->
+    <section id="screen-result" class="screen hidden">
+      <div class="result-card">
+        <h2 class="result-title" id="result-title">太棒啦！</h2>
+        <div class="result-stars" id="result-stars"></div>
+        <p class="result-accuracy" id="result-accuracy"></p>
+        <p class="result-msg" id="result-msg"></p>
+        <div class="result-actions">
+          <button class="btn-retry" id="btn-retry">🔄 再来一次</button>
+          <button class="btn-home" id="btn-home">🏠 回首页</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 背景音乐开关 -->
+  <button id="music-toggle" class="music-toggle" title="背景音乐">🔊</button>
+
+  <!-- 作者信息 -->
+  <footer class="site-footer">
+    <span>🐉 小火龙数学进化论 <em>MathDragon Evolution</em> · 作者 <strong>Moshow郑锴</strong></span>
+    <span class="footer-links">
+      <a href="https://github.com/moshowgame/mathdragon-evolution" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://zhengkai.blog.csdn.net/" target="_blank" rel="noopener">CSDN</a>
+    </span>
+  </footer>
+
+  <!-- 小火龙吉祥物（常驻右下角） -->
+  <div id="dragon" class="dragon" title="我是小火龙！"></div>
+
+  <!-- 进化特效画布 -->
+  <canvas id="fx-canvas" class="fx-canvas"></canvas>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
