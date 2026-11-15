@@ -113,13 +113,69 @@ function dragonStage2() {
 
 /** 点击喷火剩余次数（每次进页面重置，最多 3 次） */
 let puffsLeft = 3;
+/** 答题页内连续点击次数（答完一题重置） */
+let quizPokes = 0;
+/** 火龙是否已离家出走 */
+let away = false;
+
+const isQuizActive = () => {
+  const quiz = document.querySelector('#screen-quiz');
+  return quiz && !quiz.classList.contains('hidden');
+};
+
+/** 答完一题后，火龙的耐心重置 */
+export function resetPatience() {
+  quizPokes = 0;
+}
+
+/** 火龙离家出走 20 秒 */
+function leaveForWalk(el, audio) {
+  away = true;
+  quizPokes = 0;
+  audio.speak('别烦我啦，我出去溜了拜拜～');
+  el.classList.add('leaving');
+  setTimeout(() => { el.style.display = 'none'; }, 1700);
+
+  setTimeout(() => {
+    el.style.display = '';
+    el.classList.remove('leaving');
+    void el.offsetWidth;
+    el.classList.add('returning');
+    audio.speak('我溜达回来啦，要继续认真做题哦！');
+    setTimeout(() => {
+      el.classList.remove('returning');
+      away = false;
+    }, 1600);
+  }, 20000);
+}
 
 /** 初始化吉祥物 */
 export function initDragon() {
   const el = dragonEl();
   el.innerHTML = dragonSVG(getStage());
   el.addEventListener('click', () => {
+    if (away) return;
     import('./audio.js').then((audio) => {
+      // 答题页捣乱判定：连点越来越不耐烦
+      if (isQuizActive()) {
+        quizPokes++;
+        if (quizPokes >= 5) {
+          leaveForWalk(el, audio);
+          return;
+        }
+        if (quizPokes >= 3) {
+          // 不耐烦：小小喷你一下火，劝你学习
+          setMood('sad');
+          audio.sfx.fire();
+          playFX('breath', 1000);
+          audio.speak(quizPokes === 3 ? '哎呀别闹啦，要认真做题哦！' : '再烦我，我可要出去溜达了哦！');
+          return;
+        }
+      } else {
+        quizPokes = 0;
+      }
+
+      // 平时点击：限量喷火
       if (puffsLeft > 0) {
         puffsLeft--;
         setMood('happy');

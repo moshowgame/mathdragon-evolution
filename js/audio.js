@@ -61,4 +61,3 @@ if ('speechSynthesis' in window) {
 }
 
 export const PRAISE = ['答对啦，你太棒啦！', '哇，好厉害呀！', '完全正确，继续加油！', '真聪明，小火龙为你骄傲！'];
-export const ENCOURAGE = ['差一点点，再想一想哦！', '没关系，看看解析就明白啦！', '别灰心，学起来其实很简单哦！'];

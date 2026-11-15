@@ -2,8 +2,8 @@
 
 import { generateQuestions } from './questions.js';
 import { buildExplanation } from './explain.js';
-import { sfx, speak, PRAISE, ENCOURAGE } from './audio.js';
-import { setMood, playFX, playEvolution, getStage } from './dragon.js';
+import { sfx, speak, PRAISE } from './audio.js';
+import { setMood, playFX, playEvolution, getStage, resetPatience } from './dragon.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -105,6 +105,7 @@ function attachDrag(option) {
 function answer(value, optionEl) {
   if (state.locked) return;
   state.locked = true;
+  resetPatience(); // 答完一题，火龙的耐心重置
 
   const q = state.questions[state.idx];
   const box = $('#answer-box');
@@ -126,14 +127,14 @@ function answer(value, optionEl) {
     $('#progress-fill').style.width = `${((state.idx + 1) / state.count) * 100}%`;
     setTimeout(next, 1400);
   } else {
-    // ❌ 答错 → 展示解析
+    // ❌ 答错 → 火龙摇头，先问要不要解析
     content.textContent = value;
     box.classList.add('wrong');
     optionEl.style.visibility = 'hidden';
     sfx.wrong();
-    speak(ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)]);
     setMood('sad');
-    $('#question-bubble').textContent = '没关系，看看解析就知道啦～';
+    speak('这道题你应该会的啊，要不要看看解析呢？');
+    $('#question-bubble').textContent = '要不要看看解析呢？🤔';
     showExplain(q);
   }
 }
@@ -141,29 +142,60 @@ function answer(value, optionEl) {
 function showExplain(q) {
   const panel = $('#explain-panel');
   const stepsEl = $('#explain-steps');
+  const actionsEl = $('#explain-actions');
+  const continueBtn = $('#btn-continue');
+  const titleEl = $('#explain-title');
+  const showBtn = $('#btn-show-explain');
+  const skipBtn = $('#btn-skip');
   const { title, steps } = buildExplanation(q);
-  $('#explain-panel .explain-title').textContent = `🔍 ${title}`;
 
+  // 第一阶段：火龙先问，不自动展开解析
+  titleEl.textContent = '💬 小火龙想对你说';
   stepsEl.innerHTML = '';
-  steps.forEach((s, i) => {
-    const div = document.createElement('div');
-    div.className = `explain-step${s.final ? ' final' : ''}`;
-    div.style.animationDelay = `${0.3 + i * 0.55}s`;
-    div.innerHTML = `<span class="step-icon">${s.icon}</span>
-      <span class="step-text">${s.text} ${s.math ? `<span class="step-math">${s.math}</span>` : ''}</span>`;
-    stepsEl.appendChild(div);
-  });
-
+  actionsEl.classList.remove('hidden');
+  continueBtn.classList.add('hidden');
   panel.classList.remove('hidden');
 
-  const btn = $('#btn-continue');
-  const handler = () => {
-    btn.removeEventListener('click', handler);
+  const close = () => {
     panel.classList.add('hidden');
     $('#progress-fill').style.width = `${((state.idx + 1) / state.count) * 100}%`;
     next();
   };
-  btn.addEventListener('click', handler);
+
+  const onContinue = () => {
+    continueBtn.removeEventListener('click', onContinue);
+    close();
+  };
+
+  const onShow = () => {
+    // 用户选择要看解析 → 展开分步讲解
+    showBtn.removeEventListener('click', onShow);
+    skipBtn.removeEventListener('click', onSkip);
+    titleEl.textContent = `🔍 ${title}`;
+    stepsEl.innerHTML = '';
+    steps.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = `explain-step${s.final ? ' final' : ''}`;
+      div.style.animationDelay = `${0.2 + i * 0.55}s`;
+      div.innerHTML = `<span class="step-icon">${s.icon}</span>
+        <span class="step-text">${s.text} ${s.math ? `<span class="step-math">${s.math}</span>` : ''}</span>`;
+      stepsEl.appendChild(div);
+    });
+    actionsEl.classList.add('hidden');
+    continueBtn.classList.remove('hidden');
+    continueBtn.addEventListener('click', onContinue);
+    speak('一起来看解析吧！');
+  };
+
+  const onSkip = () => {
+    // 不想看解析 → 直接继续
+    showBtn.removeEventListener('click', onShow);
+    skipBtn.removeEventListener('click', onSkip);
+    close();
+  };
+
+  showBtn.addEventListener('click', onShow);
+  skipBtn.addEventListener('click', onSkip);
 }
 
 function next() {

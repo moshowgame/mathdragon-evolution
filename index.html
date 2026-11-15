@@ -96,9 +96,13 @@
       <!-- 错题解析面板 -->
       <div class="explain-panel hidden" id="explain-panel">
         <div class="explain-card">
-          <h3 class="explain-title">🔍 一起来看解析</h3>
+          <h3 class="explain-title" id="explain-title">💬 小火龙想对你说</h3>
           <div class="explain-steps" id="explain-steps"></div>
-          <button class="btn-continue" id="btn-continue">我懂啦，继续！💪</button>
+          <div class="explain-actions" id="explain-actions">
+            <button class="btn-show-explain" id="btn-show-explain">🔍 看看解析</button>
+            <button class="btn-skip" id="btn-skip">不用啦，继续 ➡️</button>
+          </div>
+          <button class="btn-continue hidden" id="btn-continue">我懂啦，继续！💪</button>
         </div>
       </div>
     </section>
