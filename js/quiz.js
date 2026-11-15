@@ -1,32 +1,74 @@
-// 答题流程：拖拽作答、音效语音反馈、错题解析、结算与进化
+// 答题流程：拖拽作答、音效语音反馈、错题解析、计时挑战、结算与进化
 
-import { generateQuestions } from './questions.js';
+import { generateQuestions, questionsFromWrongs } from './questions.js';
 import { buildExplanation } from './explain.js';
 import { sfx, speak, PRAISE } from './audio.js';
 import { setMood, playFX, playEvolution, getStage, resetPatience } from './dragon.js';
+import { recordQuizResult } from './storage.js';
 
 const $ = (sel) => document.querySelector(sel);
+
+const CHALLENGE_SECONDS = 60;
+const MODULE_NAMES = { add: '加法', sub: '减法', mult: '乘法', div: '除法' };
 
 const state = {
   module: 'add',
   level: 10,
   count: 10,
+  mode: 'normal', // normal | challenge
   questions: [],
   idx: 0,
   correct: 0,
+  wrongs: [],   // 本轮错题记录
   locked: false,
+  timerId: null,
+  timeLeft: 0,
 };
 
 export function startQuiz(config) {
-  Object.assign(state, config, { idx: 0, correct: 0, locked: false });
-  state.questions = generateQuestions(state.module, state.level, state.count);
+  const { questions, ...rest } = config;
+  Object.assign(state, {
+    module: 'add', level: 10, count: 10, mode: 'normal',
+    idx: 0, correct: 0, wrongs: [], locked: false, timerId: null, timeLeft: CHALLENGE_SECONDS,
+  }, rest);
+  state.questions = questions || generateQuestions(state.module, state.level, state.count);
+  if (state.mode === 'challenge') state.questions = state.questions.slice(0, 100);
+  state.count = state.questions.length;
   showScreen('quiz');
   renderQuestion();
+  if (state.mode === 'challenge') startTimer();
+}
+
+/** 退出答题（返回首页时调用，清理计时器） */
+export function quitQuiz() {
+  clearInterval(state.timerId);
+  state.timerId = null;
 }
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   $(`#screen-${name}`).classList.remove('hidden');
+}
+
+// ---------- 计时挑战 ----------
+function startTimer() {
+  state.timeLeft = CHALLENGE_SECONDS;
+  updateTimerUI();
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerUI();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      state.locked = true; // 阻止继续作答
+      finish();
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  $('#progress-text').textContent = `⏱ 剩余 ${state.timeLeft} 秒`;
+  $('#progress-fill').style.width = `${(state.timeLeft / CHALLENGE_SECONDS) * 100}%`;
 }
 
 function renderQuestion() {
@@ -39,9 +81,13 @@ function renderQuestion() {
   $('#answer-content').textContent = '?';
   const box = $('#answer-box');
   box.className = 'answer-box';
-  $('#question-bubble').textContent = `第 ${state.idx + 1} 题：把正确答案拖到盒子里吧！`;
-  $('#progress-text').textContent = `${state.idx + 1} / ${state.count}`;
-  $('#progress-fill').style.width = `${(state.idx / state.count) * 100}%`;
+  $('#question-bubble').textContent = state.mode === 'challenge'
+    ? '速度越快越厉害，冲呀！'
+    : `第 ${state.idx + 1} 题：把正确答案拖到盒子里吧！`;
+  if (state.mode !== 'challenge') {
+    $('#progress-text').textContent = `${state.idx + 1} / ${state.count}`;
+    $('#progress-fill').style.width = `${(state.idx / state.count) * 100}%`;
+  }
   $('#score-num').textContent = state.correct;
 
   const optionsEl = $('#options');
@@ -120,22 +166,33 @@ function answer(value, optionEl) {
     optionEl.classList.add('is-correct-reveal');
     document.querySelectorAll('.option').forEach(o => { if (o !== optionEl) o.classList.add('faded'); });
     sfx.correct();
-    speak(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
-    setMood('happy');
-    playFX('confetti', 1300);
-    $('#question-bubble').textContent = pick(['哇！答对啦！', '太厉害了！', '你真棒！']);
-    $('#progress-fill').style.width = `${((state.idx + 1) / state.count) * 100}%`;
-    setTimeout(next, 1400);
+    if (state.mode !== 'challenge') {
+      speak(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
+      setMood('happy');
+      playFX('confetti', 1300);
+      $('#question-bubble').textContent = pick(['哇！答对啦！', '太厉害了！', '你真棒！']);
+    }
+    $('#progress-fill').style.width = state.mode === 'challenge'
+      ? `${(state.timeLeft / CHALLENGE_SECONDS) * 100}%`
+      : `${((state.idx + 1) / state.count) * 100}%`;
+    setTimeout(next, state.mode === 'challenge' ? 500 : 1400);
   } else {
-    // ❌ 答错 → 火龙摇头，先问要不要解析
+    // ❌ 答错
+    state.wrongs.push({ a: q.a, b: q.b, op: q.op, answer: q.answer, wrong: value });
     content.textContent = value;
     box.classList.add('wrong');
     optionEl.style.visibility = 'hidden';
     sfx.wrong();
     setMood('sad');
-    speak('这道题你应该会的啊，要不要看看解析呢？');
-    $('#question-bubble').textContent = '要不要看看解析呢？🤔';
-    showExplain(q);
+
+    if (state.mode === 'challenge') {
+      // 挑战模式：快速跳过，不打断节奏
+      setTimeout(next, 650);
+    } else {
+      speak('这道题你应该会的啊，要不要看看解析呢？');
+      $('#question-bubble').textContent = '要不要看看解析呢？🤔';
+      showExplain(q);
+    }
   }
 }
 
@@ -206,35 +263,135 @@ function next() {
 
 // ---------- 结算 ----------
 async function finish() {
-  const total = state.count;
-  const accuracy = state.correct / total;
-  const stars = accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : accuracy >= 0.6 ? 1 : 0;
+  clearInterval(state.timerId);
+  state.timerId = null;
+
+  const isChallenge = state.mode === 'challenge';
+  const total = isChallenge ? Math.max(state.idx, state.correct) : state.count;
+  const accuracy = state.correct / Math.max(total, 1);
+  const stars = isChallenge
+    ? (state.correct >= 20 ? 3 : state.correct >= 12 ? 2 : state.correct >= 6 ? 1 : 0)
+    : (accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : accuracy >= 0.6 ? 1 : 0);
+
+  // 写入本地存储：错题本 / 统计 / 星星 / 打卡
+  const { bonus, streakDays } = recordQuizResult({
+    module: state.module, level: state.level,
+    correct: state.correct, total,
+    stars, wrongs: state.wrongs,
+  });
 
   showScreen('result');
-  $('#result-title').textContent = stars >= 2 ? '太棒啦！' : stars === 1 ? '做得不错！' : '继续加油！';
+  $('#result-title').textContent = isChallenge
+    ? (stars >= 2 ? '口算王驾到！👑' : '挑战结束！')
+    : stars >= 2 ? '太棒啦！' : stars === 1 ? '做得不错！' : '继续加油！';
   $('#result-stars').innerHTML = [1, 2, 3].map(i =>
     `<span class="star" style="filter:${i <= stars ? '' : 'grayscale(1) opacity(0.35)'}">⭐</span>`
   ).join('');
-  $('#result-accuracy').textContent = `答对 ${state.correct} / ${total} 题（${Math.round(accuracy * 100)}%）`;
+  $('#result-accuracy').textContent = isChallenge
+    ? `1 分钟答对 ${state.correct} 题`
+    : `答对 ${state.correct} / ${total} 题（${Math.round(accuracy * 100)}%）`;
+  $('#result-msg').textContent = bonus
+    ? `今日首次完成，星星翻倍！已连续打卡 ${streakDays} 天 🔥`
+    : `已连续打卡 ${streakDays} 天 🔥`;
 
-  if (accuracy >= 0.8) {
-    $('#result-msg').textContent = getStage() < 2 ? '小火龙正在进化…' : '火龙能量再次爆发！';
-    await new Promise(r => setTimeout(r, 600));
-    if (getStage() < 2) {
-      await playEvolution((t) => playFX(t, 3600));
-    } else {
-      // 已进化：随机冰火特效庆祝
-      const t = Math.random() < 0.5 ? 'fire' : 'ice';
-      playFX(t, 3600);
-      sfx.fanfare();
-      speak('恭喜你又变强了！');
-    }
-    $('#result-msg').textContent = getStage() >= 2 ? '你的小火龙已进化为翼火龙，继续变强吧！' : $('#result-msg').textContent;
-  } else if (accuracy >= 0.6) {
-    $('#result-msg').textContent = '离进化只差一点点，下次一定行！';
+  // 错题重做按钮
+  const redoBtn = $('#btn-redo-wrong');
+  redoBtn.classList.toggle('hidden', state.wrongs.length === 0);
+  redoBtn.textContent = `📖 重做错题（${state.wrongs.length} 题）`;
+  redoBtn.onclick = () => startQuiz({
+    questions: questionsFromWrongs(state.wrongs),
+    mode: 'normal',
+  });
+
+  // 挑战模式：生成可分享战绩卡
+  const cardCanvas = $('#share-card');
+  const downloadBtn = $('#btn-download-card');
+  if (isChallenge) {
+    cardCanvas.classList.remove('hidden');
+    downloadBtn.classList.remove('hidden');
+    drawShareCard(cardCanvas, { correct: state.correct, stars, module: state.module, level: state.level });
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = cardCanvas.toDataURL('image/png');
+      a.download = `口算王战绩卡_${state.correct}题.png`;
+      a.click();
+    };
+    sfx.fanfare();
+    speak(state.correct >= 12 ? '太厉害了，你就是口算王！' : '不错的成绩，再来挑战一次吧！');
   } else {
-    $('#result-msg').textContent = '多练习几次，小火龙相信你！';
+    cardCanvas.classList.add('hidden');
+    downloadBtn.classList.add('hidden');
+    if (accuracy >= 0.8) {
+      if (getStage() < 2) {
+        await new Promise(r => setTimeout(r, 600));
+        await playEvolution((t) => playFX(t, 3600));
+      } else {
+        const t = Math.random() < 0.5 ? 'fire' : 'ice';
+        playFX(t, 3600);
+        sfx.fanfare();
+        speak('恭喜你又变强了！');
+      }
+      $('#result-msg').textContent = getStage() >= 2
+        ? `你的小火龙已进化为翼火龙！已连续打卡 ${streakDays} 天 🔥`
+        : $('#result-msg').textContent;
+    } else if (accuracy >= 0.6) {
+      $('#result-msg').textContent += ' 离进化只差一点点，下次一定行！';
+    } else {
+      $('#result-msg').textContent += ' 多练习几次，小火龙相信你！';
+    }
   }
+}
+
+/** 绘制可分享的战绩卡 */
+function drawShareCard(canvas, { correct, stars, module, level }) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // 背景渐变
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#aee6ff');
+  bg.addColorStop(1, '#fff3c4');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 圆角白卡
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, 30, 30, W - 60, H - 60, 30);
+  ctx.fill();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#e64a19';
+  ctx.font = 'bold 44px "Microsoft YaHei", sans-serif';
+  ctx.fillText('🔥 1分钟口算王 🔥', W / 2, 100);
+
+  ctx.fillStyle = '#42a5f5';
+  ctx.font = 'bold 26px "Microsoft YaHei", sans-serif';
+  ctx.fillText(`${MODULE_NAMES[module] || module} · ${level} 以内`, W / 2, 145);
+
+  ctx.fillStyle = '#ff7043';
+  ctx.font = 'bold 110px "Microsoft YaHei", sans-serif';
+  ctx.fillText(String(correct), W / 2, 270);
+  ctx.fillStyle = '#7b5e57';
+  ctx.font = '26px "Microsoft YaHei", sans-serif';
+  ctx.fillText('题 答对', W / 2, 305);
+
+  ctx.font = '40px sans-serif';
+  ctx.fillText('⭐'.repeat(stars) + '☆'.repeat(3 - stars), W / 2, 350);
+
+  ctx.fillStyle = '#9e9e9e';
+  ctx.font = '18px "Microsoft YaHei", sans-serif';
+  const date = new Date().toLocaleDateString('zh-CN');
+  ctx.fillText(`${date} · 小火龙数学进化论 MathDragon Evolution`, W / 2, 400);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];

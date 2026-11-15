@@ -6,7 +6,57 @@
  * @returns {{title:string, steps:{icon:string,text:string,math:string,final?:boolean}[]}}
  */
 export function buildExplanation(q) {
-  return q.op === '+' ? explainAdd(q) : explainSub(q);
+  if (q.op === '+') return explainAdd(q);
+  if (q.op === '−') return explainSub(q);
+  if (q.op === '×') return explainMult(q);
+  return explainDiv(q);
+}
+
+// ---------- 乘法 ----------
+function explainMult({ a, b, answer }) {
+  const steps = [];
+
+  // 两位数 × 一位数：拆数法
+  if (a >= 10) {
+    const at = a - (a % 10), ao = a % 10;
+    steps.push({ icon: '✂️', text: `把 ${a} 拆成 ${at} 和 ${ao}`, math: `${a} = ${at} + ${ao}` });
+    steps.push({ icon: '🔟', text: `整十数先乘`, math: `${at} × ${b} = ${at * b}` });
+    steps.push({ icon: '1️⃣', text: `个位数再乘`, math: `${ao} × ${b} = ${ao * b}` });
+    steps.push({ icon: '🎉', text: `加在一起`, math: `${at * b} + ${ao * b} = ${answer}`, final: true });
+    return { title: `拆数法：${a} × ${b}`, steps };
+  }
+
+  // 表内乘法：连加理解 + 口诀
+  const addLine = Array.from({ length: b }, () => a).join(' + ');
+  steps.push({ icon: '➕', text: `${a} × ${b} 就是 ${b} 个 ${a} 相加`, math: addLine });
+  if (answer <= 20) steps.push({ icon: '🧠', text: `口诀：${MUL_TIPS[`${a}x${b}`] || MUL_TIPS[`${b}x${a}`] || ''}`, math: '' });
+  steps.push({ icon: '🎉', text: `所以`, math: `${a} × ${b} = ${answer}`, final: true });
+  return { title: `乘法解析：${a} × ${b}`, steps };
+}
+
+// 九九口诀表
+const MUL_TIPS = (() => {
+  const formal = { 1: ['一一得一'], 2: ['一二得二', '二二得四'], 3: ['一三得三', '二三得六', '三三得九'], 4: ['一四得四', '二四得八', '三四十二', '四四十六'], 5: ['一五得五', '二五一十', '三五十五', '四五二十', '五五二十五'], 6: ['一六得六', '二六十二', '三六十八', '四六二十四', '五六三十', '六六三十六'], 7: ['一七得七', '二七十四', '三七二十一', '四七二十八', '五七三十五', '六七四十二', '七七四十九'], 8: ['一八得八', '二八十六', '三八二十四', '四八三十二', '五八四十', '六八四十八', '七八五十六', '八八六十四'], 9: ['一九得九', '二九十八', '三九二十七', '四九三十六', '五九四十五', '六九五十四', '七九六十三', '八九七十二', '九九八十一'] };
+  const tips = {};
+  for (let a = 1; a <= 9; a++) for (let b = 1; b <= 9; b++) {
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    tips[`${a}x${b}`] = formal[lo][hi - 1];
+  }
+  return tips;
+})();
+
+// ---------- 除法 ----------
+function explainDiv({ a, b, answer }) {
+  const steps = [];
+  const product = b * answer;
+  steps.push({ icon: '🧠', text: `除法用乘法来想：${b} 乘几等于 ${a} 呢？`, math: '' });
+  if (answer <= 9 && b <= 9) {
+    steps.push({ icon: '📖', text: `想口诀：${MUL_TIPS[`${b}x${answer}`]}`, math: `${b} × ${answer} = ${product}` });
+  } else {
+    steps.push({ icon: '✖️', text: `试一试`, math: `${b} × ${answer} = ${product}` });
+  }
+  steps.push({ icon: '🎉', text: `所以`, math: `${a} ÷ ${b} = ${answer}`, final: true });
+  return { title: `除法解析：${a} ÷ ${b}`, steps };
 }
 
 // ---------- 加法 ----------

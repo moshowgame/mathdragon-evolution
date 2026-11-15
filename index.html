@@ -19,6 +19,7 @@
         <p class="app-slogan">Answer · Learn · Evolve</p>
         <p class="app-subtitle">每天答 10 题，见证小火龙进化，也见证孩子进化！</p>
       </div>
+      <div class="home-stats" id="home-stats"></div>
       <div class="module-grid">
         <button class="module-card module-add" data-module="add">
           <span class="module-emoji">➕</span>
@@ -30,6 +31,20 @@
           <span class="module-name">减法森林</span>
           <span class="module-desc">拿走一些，还剩多少？</span>
         </button>
+        <button class="module-card module-mult" data-module="mult">
+          <span class="module-emoji">✖️</span>
+          <span class="module-name">乘法高塔</span>
+          <span class="module-desc">九九口诀，越乘越强！</span>
+        </button>
+        <button class="module-card module-div" data-module="div">
+          <span class="module-emoji">➗</span>
+          <span class="module-name">除法海岛</span>
+          <span class="module-desc">平均分一分，超简单！</span>
+        </button>
+      </div>
+      <div class="home-actions">
+        <button class="btn-home-action challenge" id="btn-challenge">⏱️ 1分钟口算王</button>
+        <button class="btn-home-action report" id="btn-report">📊 家长报告</button>
       </div>
     </section>
 
@@ -56,7 +71,7 @@
         </div>
       </div>
 
-      <div class="setup-block">
+      <div class="setup-block" id="count-block">
         <h3 class="setup-label">📝 要答多少题？</h3>
         <div class="count-grid" id="count-grid">
           <button class="count-pill" data-count="10">10 题</button>
@@ -114,10 +129,29 @@
         <div class="result-stars" id="result-stars"></div>
         <p class="result-accuracy" id="result-accuracy"></p>
         <p class="result-msg" id="result-msg"></p>
+        <canvas id="share-card" width="680" height="440" class="share-card hidden"></canvas>
         <div class="result-actions">
+          <button class="btn-retry hidden" id="btn-redo-wrong">📖 重做错题</button>
           <button class="btn-retry" id="btn-retry">🔄 再来一次</button>
           <button class="btn-home" id="btn-home">🏠 回首页</button>
         </div>
+        <button class="btn-download hidden" id="btn-download-card">💾 保存战绩卡，分享给爸爸妈妈！</button>
+      </div>
+    </section>
+
+    <!-- 家长报告 -->
+    <section id="screen-report" class="screen hidden">
+      <button class="btn-back" id="btn-back-report">⬅ 返回</button>
+      <h2 class="setup-title">📊 家长报告</h2>
+      <div class="report-summary" id="report-summary"></div>
+      <div class="report-block">
+        <h3 class="setup-label">📈 各模块正确率</h3>
+        <div id="report-stats"></div>
+      </div>
+      <div class="report-block">
+        <h3 class="setup-label">📖 最近错题本</h3>
+        <div id="report-wrong-list" class="wrong-list"></div>
+        <button class="btn-start small" id="btn-redo-wrongs">🔄 重做这些错题</button>
       </div>
     </section>
   </div>
