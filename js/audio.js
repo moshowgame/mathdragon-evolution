@@ -35,6 +35,8 @@ export const sfx = {
   wrong: () => playNotes([220, 180], { type: 'triangle', dur: 0.28, gap: 0.18, vol: 0.3 }),
   evolve: () => playNotes([392, 523, 659, 784, 1047, 1319], { dur: 0.3, gap: 0.12, vol: 0.45 }),
   fanfare: () => playNotes([784, 784, 784, 1047], { dur: 0.25, gap: 0.16, vol: 0.4 }),
+  // 喷火：由高到低的锯齿波呼啸声
+  fire: () => playNotes([980, 740, 560, 420, 320], { type: 'sawtooth', dur: 0.28, gap: 0.09, vol: 0.22 }),
 };
 
 /** 中文语音播报（童趣音调） */

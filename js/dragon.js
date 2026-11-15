@@ -23,7 +23,8 @@ function dragonStage1() {
     <!-- 尾巴 + 火苗 -->
     <path d="M88 118 Q118 128 112 100" fill="none" stroke="#ff9d5c" stroke-width="13" stroke-linecap="round"/>
     <path d="M112 100 Q120 88 110 72 Q116 88 104 94 Q112 80 106 70 Q118 82 114 98 Q118 106 112 100 Z" fill="url(#flame1)">
-      <animate attributeName="opacity" values="1;0.7;1" dur="0.8s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" additive="sum" values="1;1.12;1.04;1.15;1" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.82;0.9;0.78;1" dur="2.2s" repeatCount="indefinite"/>
     </path>
     <!-- 身体 -->
     <ellipse cx="62" cy="104" rx="34" ry="30" fill="#ff9d5c" stroke="#e64a19" stroke-width="3"/>
@@ -74,7 +75,8 @@ function dragonStage2() {
     <!-- 尾巴 + 大火苗 -->
     <path d="M92 122 Q126 134 118 100" fill="none" stroke="#ff814a" stroke-width="14" stroke-linecap="round"/>
     <path d="M118 100 Q130 84 118 62 Q128 82 112 90 Q122 74 114 60 Q132 76 124 98 Q130 108 118 100 Z" fill="url(#flame2)">
-      <animate attributeName="opacity" values="1;0.65;1" dur="0.6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" additive="sum" values="1;1.18;1.05;1.22;1" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.8;0.88;0.75;1" dur="1.8s" repeatCount="indefinite"/>
     </path>
     <!-- 身体 -->
     <ellipse cx="72" cy="108" rx="36" ry="32" fill="#ff814a" stroke="#d84315" stroke-width="3"/>
@@ -109,13 +111,32 @@ function dragonStage2() {
   </svg>`;
 }
 
+/** 点击喷火剩余次数（每次进页面重置，最多 3 次） */
+let puffsLeft = 3;
+
 /** 初始化吉祥物 */
 export function initDragon() {
   const el = dragonEl();
   el.innerHTML = dragonSVG(getStage());
   el.addEventListener('click', () => {
-    setMood('happy');
-    import('./audio.js').then(m => m.speak(`我是${getStage() >= 2 ? '翼火龙' : '小火龙'}，答题帮我进化吧！`));
+    import('./audio.js').then((audio) => {
+      if (puffsLeft > 0) {
+        puffsLeft--;
+        setMood('happy');
+        el.classList.remove('breathing');
+        void el.offsetWidth;
+        el.classList.add('breathing');
+        setTimeout(() => el.classList.remove('breathing'), 1400);
+        audio.sfx.fire();
+        playFX('breath', 1800);
+        const lines = ['吼——超级火焰攻击！', '看我的大火苗，嗷呜！', '哇，火力全开，好热好热！'];
+        audio.speak(lines[Math.min(2 - puffsLeft, 2)] || lines[0]);
+        if (puffsLeft === 0) setTimeout(() => audio.speak('火力用完啦，答对80%让我进化再喷吧！'), 2600);
+      } else {
+        setMood('sad');
+        audio.speak('小火龙累了，让我休息一下才能继续喷火哦～');
+      }
+    });
   });
 }
 
@@ -172,7 +193,7 @@ export function playEvolution(onFx) {
   });
 }
 
-/** 全屏粒子特效：fire 火焰喷发 / ice 冰雪纷飞 / confetti 彩带 */
+/** 全屏粒子特效：fire 火焰喷发 / ice 冰雪纷飞 / breath 火龙喷火 / confetti 彩带 */
 export function playFX(type, duration = 3200) {
   const canvas = document.getElementById('fx-canvas');
   const ctx2d = canvas.getContext('2d');
@@ -180,66 +201,120 @@ export function playFX(type, duration = 3200) {
   canvas.height = innerHeight;
   canvas.style.display = 'block';
 
-  const parts = [];
-  const N = type === 'confetti' ? 80 : 140;
-
-  for (let i = 0; i < N; i++) {
-    if (type === 'fire') {
-      parts.push({
-        x: Math.random() * canvas.width,
-        y: canvas.height + 20,
-        vx: rand(-1, 1), vy: rand(-9, -4),
-        size: rand(6, 16), life: rand(50, 110), age: 0,
-        hue: rand(10, 50), kind: 'fire',
-      });
-    } else if (type === 'ice') {
-      parts.push({
-        x: Math.random() * canvas.width,
-        y: -20,
-        vx: rand(-1.2, 1.2), vy: rand(1.5, 4),
-        size: rand(4, 10), life: rand(120, 220), age: 0,
-        hue: rand(180, 210), kind: 'ice', spin: rand(-0.1, 0.1), angle: Math.random() * Math.PI,
-      });
-    } else {
-      parts.push({
-        x: Math.random() * canvas.width, y: -20,
-        vx: rand(-1.5, 1.5), vy: rand(2, 5),
-        size: rand(5, 11), life: rand(90, 160), age: 0,
-        color: ['#ef5350', '#ffca28', '#66bb6a', '#42a5f5', '#ab47bc'][i % 5],
-        kind: 'confetti', spin: rand(-0.2, 0.2), angle: Math.random() * Math.PI,
-      });
-    }
+  // 冰火全屏特效：开局闪光 + 屏幕震动，更加夸张
+  const isBigFX = type === 'fire' || type === 'ice';
+  let shakeTimer = null;
+  if (isBigFX) {
+    document.body.classList.remove('fx-shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('fx-shake');
+    shakeTimer = setTimeout(() => document.body.classList.remove('fx-shake'), 800);
+    duration = Math.max(duration, 4200);
   }
+
+  // 喷火特效：以火龙嘴为发射点，持续喷射
+  const breathOrigin = { x: 0, y: 0 };
+  if (type === 'breath') {
+    const rect = dragonEl().getBoundingClientRect();
+    breathOrigin.x = rect.left + rect.width * 0.42;
+    breathOrigin.y = rect.top + rect.height * 0.3;
+  }
+
+  const parts = [];
+  const N = type === 'confetti' ? 80 : type === 'breath' ? 90 : 260;
+
+  const spawn = (i) => {
+    if (type === 'fire') {
+      // 火焰：底部大片喷发 + 漂浮火星
+      const big = Math.random() < 0.3;
+      return {
+        x: Math.random() * canvas.width,
+        y: canvas.height + rand(10, 80),
+        vx: rand(-2.4, 2.4), vy: big ? rand(-14, -8) : rand(-8, -3),
+        size: big ? rand(18, 42) : rand(8, 20), life: rand(60, 130), age: 0,
+        hue: rand(8, 52), kind: 'fire',
+      };
+    }
+    if (type === 'ice') {
+      // 冰晶：大小雪花漫天飞舞
+      const big = Math.random() < 0.25;
+      return {
+        x: Math.random() * canvas.width,
+        y: -rand(20, 140),
+        vx: rand(-1.6, 1.6), vy: big ? rand(1, 3) : rand(2.5, 6),
+        size: big ? rand(14, 30) : rand(5, 12), life: rand(150, 260), age: 0,
+        hue: rand(175, 215), kind: 'ice', spin: rand(-0.12, 0.12), angle: Math.random() * Math.PI,
+      };
+    }
+    if (type === 'breath') {
+      // 从火龙嘴里向左上方喷出
+      return {
+        x: breathOrigin.x + rand(-8, 8),
+        y: breathOrigin.y + rand(-8, 8),
+        vx: rand(-7.5, -1.5), vy: rand(-9, -2),
+        size: rand(9, 24), life: rand(30, 60), age: 0,
+        hue: rand(10, 50), kind: 'fire',
+      };
+    }
+    return {
+      x: Math.random() * canvas.width, y: -20,
+      vx: rand(-1.5, 1.5), vy: rand(2, 5),
+      size: rand(5, 11), life: rand(90, 160), age: 0,
+      color: ['#ef5350', '#ffca28', '#66bb6a', '#42a5f5', '#ab47bc'][i % 5],
+      kind: 'confetti', spin: rand(-0.2, 0.2), angle: Math.random() * Math.PI,
+    };
+  };
+
+  for (let i = 0; i < N; i++) parts.push(spawn(i));
 
   let raf;
   const start = performance.now();
+  if (activeRaf) cancelAnimationFrame(activeRaf); // 并发保护：新特效接管画布
 
   function frame(now) {
     const elapsed = now - start;
     ctx2d.clearRect(0, 0, canvas.width, canvas.height);
 
+    // 开场全屏闪光（冰/火氛围光）
+    if (isBigFX && elapsed < 900) {
+      const alpha = 0.85 * (1 - elapsed / 900);
+      const flashColor = type === 'fire' ? '255,140,40' : '150,220,255';
+      const flash = ctx2d.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width * 0.8);
+      flash.addColorStop(0, `rgba(${flashColor}, ${alpha})`);
+      flash.addColorStop(1, `rgba(${flashColor}, 0)`);
+      ctx2d.fillStyle = flash;
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 喷火：喷射期间不断补充新火苗
+    if (type === 'breath' && elapsed < 900) {
+      for (let i = 0; i < 5; i++) parts.push(spawn(i));
+    }
+
     for (const p of parts) {
       p.age++;
       p.x += p.vx; p.y += p.vy;
-      if (p.kind === 'fire') { p.vy += 0.06; p.vx *= 0.99; }
-      if (p.kind === 'ice') { p.x += Math.sin(p.age * 0.05) * 0.8; p.angle += p.spin; }
+      if (p.kind === 'fire') { p.vy += 0.06; p.vx *= 0.99; p.size *= 0.985; }
+      if (p.kind === 'ice') { p.x += Math.sin(p.age * 0.05) * 1.1; p.angle += p.spin; }
       if (p.kind === 'confetti') { p.vy += 0.05; p.angle += p.spin; }
 
       const alpha = Math.max(0, 1 - p.age / p.life);
       if (p.kind === 'fire') {
-        const g = ctx2d.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-        g.addColorStop(0, `hsla(${p.hue}, 100%, 65%, ${alpha})`);
-        g.addColorStop(1, `hsla(${p.hue - 10}, 100%, 50%, 0)`);
+        const g = ctx2d.createRadialGradient(p.x, p.y, 0, p.x, p.y, Math.max(p.size, 1));
+        g.addColorStop(0, `hsla(${p.hue}, 100%, 68%, ${alpha})`);
+        g.addColorStop(0.55, `hsla(${p.hue}, 100%, 55%, ${alpha * 0.8})`);
+        g.addColorStop(1, `hsla(${p.hue - 12}, 100%, 45%, 0)`);
         ctx2d.fillStyle = g;
         ctx2d.beginPath();
-        ctx2d.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx2d.arc(p.x, p.y, Math.max(p.size, 1), 0, Math.PI * 2);
         ctx2d.fill();
       } else if (p.kind === 'ice') {
         ctx2d.save();
         ctx2d.translate(p.x, p.y);
         ctx2d.rotate(p.angle);
-        ctx2d.fillStyle = `hsla(${p.hue}, 90%, 75%, ${alpha})`;
-        ctx2d.strokeStyle = `hsla(${p.hue}, 90%, 55%, ${alpha})`;
+        ctx2d.fillStyle = `hsla(${p.hue}, 90%, 78%, ${alpha})`;
+        ctx2d.strokeStyle = `hsla(${p.hue}, 90%, 52%, ${alpha})`;
+        ctx2d.lineWidth = 2;
         ctx2d.beginPath();
         for (let k = 0; k < 6; k++) {
           const a = (Math.PI / 3) * k;
@@ -262,14 +337,20 @@ export function playFX(type, duration = 3200) {
 
     if (elapsed < duration) {
       raf = requestAnimationFrame(frame);
+      activeRaf = raf;
     } else {
       ctx2d.clearRect(0, 0, canvas.width, canvas.height);
       canvas.style.display = 'none';
       cancelAnimationFrame(raf);
+      activeRaf = null;
+      clearTimeout(shakeTimer);
+      document.body.classList.remove('fx-shake');
     }
   }
   raf = requestAnimationFrame(frame);
+  activeRaf = raf;
 }
 
 const rand = (min, max) => Math.random() * (max - min) + min;
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
+let activeRaf = null;
