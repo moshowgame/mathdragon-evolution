@@ -3,7 +3,7 @@
 import { generateQuestions, questionsFromWrongs } from './questions.js';
 import { buildExplanation } from './explain.js';
 import { sfx, speak, PRAISE } from './audio.js';
-import { setMood, playFX, playEvolution, getStage, resetPatience } from './dragon.js';
+import { setMood, playFX, playEvolution, getStage, resetPatience, grantUlt, STAGES } from './dragon.js';
 import { recordQuizResult } from './storage.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -161,6 +161,12 @@ function answer(value, optionEl) {
     // ✅ 答对
     state.correct++;
     $('#score-num').textContent = state.correct;
+    // 每答对 10 题奖励大招次数（答 20 题以上的轮次翻倍）
+    if (state.correct % 10 === 0) {
+      const reward = state.count >= 20 ? 4 : 2;
+      grantUlt(reward);
+      speak(`答对${state.correct}题！获得${reward}次大招机会！`);
+    }
     content.textContent = value;
     box.classList.add('correct');
     optionEl.classList.add('is-correct-reveal');
@@ -273,12 +279,13 @@ async function finish() {
     ? (state.correct >= 20 ? 3 : state.correct >= 12 ? 2 : state.correct >= 6 ? 1 : 0)
     : (accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : accuracy >= 0.6 ? 1 : 0);
 
-  // 写入本地存储：错题本 / 统计 / 星星 / 打卡
-  const { bonus, streakDays } = recordQuizResult({
+  // 写入本地存储：错题本 / 统计 / 星星（答对10题=1⭐）/ 打卡
+  const stageBefore = getStage();
+  const { bonus, streakDays, starsEarned } = recordQuizResult({
     module: state.module, level: state.level,
-    correct: state.correct, total,
-    stars, wrongs: state.wrongs,
+    correct: state.correct, total, wrongs: state.wrongs,
   });
+  const stageAfter = getStage();
 
   showScreen('result');
   $('#result-title').textContent = isChallenge
@@ -290,9 +297,9 @@ async function finish() {
   $('#result-accuracy').textContent = isChallenge
     ? `1 分钟答对 ${state.correct} 题`
     : `答对 ${state.correct} / ${total} 题（${Math.round(accuracy * 100)}%）`;
-  $('#result-msg').textContent = bonus
-    ? `今日首次完成，星星翻倍！已连续打卡 ${streakDays} 天 🔥`
-    : `已连续打卡 ${streakDays} 天 🔥`;
+  $('#result-msg').textContent = `本次答对 ${state.correct} 题，获得 ${starsEarned} ⭐（答对10题=1星）` +
+    (bonus ? '，今日首次完成星星翻倍！' : '') +
+    ` 已连续打卡 ${streakDays} 天 🔥`;
 
   // 错题重做按钮
   const redoBtn = $('#btn-redo-wrong');
@@ -321,22 +328,25 @@ async function finish() {
   } else {
     cardCanvas.classList.add('hidden');
     downloadBtn.classList.add('hidden');
-    if (accuracy >= 0.8) {
-      if (getStage() < 2) {
-        await new Promise(r => setTimeout(r, 600));
-        await playEvolution((t) => playFX(t, 3600));
-      } else {
-        const t = Math.random() < 0.5 ? 'fire' : 'ice';
-        playFX(t, 3600);
-        sfx.fanfare();
-        speak('恭喜你又变强了！');
-      }
-      $('#result-msg').textContent = getStage() >= 2
-        ? `你的小火龙已进化为翼火龙！已连续打卡 ${streakDays} 天 🔥`
-        : $('#result-msg').textContent;
-    } else if (accuracy >= 0.6) {
+  }
+
+  // 🎉 星级进化：星星累计到新等级 → 进化演出（普通/挑战模式通用）
+  if (stageAfter > stageBefore) {
+    await new Promise(r => setTimeout(r, 600));
+    await playEvolution((t) => playFX(t, 3600));
+  } else if (accuracy >= 0.8 || (isChallenge && state.correct >= 12)) {
+    // 未进化也庆祝：随机火/冰大特效（爆炸音效 + 屏幕震动已内置）
+    playFX(Math.random() < 0.5 ? 'fire' : 'ice', 3600);
+    sfx.fanfare();
+    speak('恭喜你又变强了！');
+  }
+
+  if (!isChallenge) {
+    if (stageAfter > stageBefore) {
+      $('#result-msg').textContent += ` 你的小火龙进化成「${STAGES[stageAfter].name}」啦！`;
+    } else if (accuracy >= 0.6 && accuracy < 0.8) {
       $('#result-msg').textContent += ' 离进化只差一点点，下次一定行！';
-    } else {
+    } else if (accuracy < 0.6) {
       $('#result-msg').textContent += ' 多练习几次，小火龙相信你！';
     }
   }

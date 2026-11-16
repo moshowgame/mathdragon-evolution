@@ -37,6 +37,34 @@ export const sfx = {
   fanfare: () => playNotes([784, 784, 784, 1047], { dur: 0.25, gap: 0.16, vol: 0.4 }),
   // 喷火：由高到低的锯齿波呼啸声
   fire: () => playNotes([980, 740, 560, 420, 320], { type: 'sawtooth', dur: 0.28, gap: 0.09, vol: 0.22 }),
+  // 爆炸轰鸣：低频下坠 + 噪声爆发（冰火大特效用）
+  boom: () => {
+    try {
+      const ac = ensureCtx();
+      const t0 = ac.currentTime;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, t0);
+      osc.frequency.exponentialRampToValueAtTime(40, t0 + 0.7);
+      gain.gain.setValueAtTime(0.55, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.8);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0); osc.stop(t0 + 0.85);
+      const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.4), ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      const src = ac.createBufferSource();
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.35, t0);
+      ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      src.buffer = buf;
+      src.connect(ng).connect(ac.destination);
+      src.start(t0);
+    } catch { /* 静默 */ }
+  },
+  // 冰冻：高频下行琶音，冰晶闪烁
+  ice: () => playNotes([1568, 1319, 1047, 880, 740, 622], { type: 'triangle', dur: 0.22, gap: 0.08, vol: 0.3 }),
 };
 
 /** 中文语音播报（童趣音调） */

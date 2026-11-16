@@ -449,6 +449,25 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 .dragon.sad { animation: dragon-sad 0.6s ease; }
 .dragon.breathing { animation: dragon-breathe 1.4s ease; }
 
+/* 🔥 大招按钮：位于火龙上方，答对10题解锁 */
+.dragon-ult {
+  position: fixed; right: 14px; bottom: 185px; z-index: 51;
+  padding: 10px 20px;
+  font-family: inherit; font-size: 17px; font-weight: 900; color: #fff;
+  background: linear-gradient(180deg, #ff8a65, #e64a19);
+  border: 3px solid #fff; border-radius: 999px;
+  box-shadow: 0 0 18px rgba(255, 120, 40, 0.7), var(--shadow-pop);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  animation: ult-glow 1.6s ease-in-out infinite;
+}
+.dragon-ult:hover { transform: scale(1.1); }
+.dragon-ult.hidden { display: none; }
+@keyframes ult-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 120, 40, 0.5), var(--shadow-pop); }
+  50% { box-shadow: 0 0 26px rgba(255, 150, 60, 0.95), var(--shadow-pop); }
+}
+
 /* 离家出走：扇着翅膀飞走 */
 .dragon.leaving { animation: dragon-leave 1.7s ease-in forwards; }
 @keyframes dragon-leave {
@@ -476,15 +495,19 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 }
 
 /* 冰火特效开场时的全屏震动 */
-body.fx-shake { animation: screen-shake 0.7s ease; }
+body.fx-shake { animation: screen-shake 1.2s ease; }
 @keyframes screen-shake {
   0%, 100% { transform: translate(0, 0); }
-  15% { transform: translate(-8px, 5px); }
-  30% { transform: translate(7px, -6px); }
-  45% { transform: translate(-6px, -4px); }
-  60% { transform: translate(5px, 4px); }
-  75% { transform: translate(-3px, 2px); }
-  90% { transform: translate(2px, -1px); }
+  8% { transform: translate(-12px, 8px) rotate(-0.5deg); }
+  16% { transform: translate(11px, -9px) rotate(0.5deg); }
+  24% { transform: translate(-10px, -7px); }
+  32% { transform: translate(9px, 7px) rotate(-0.4deg); }
+  40% { transform: translate(-8px, 6px); }
+  50% { transform: translate(7px, -6px) rotate(0.3deg); }
+  60% { transform: translate(-6px, 5px); }
+  70% { transform: translate(5px, -4px); }
+  80% { transform: translate(-4px, 3px); }
+  90% { transform: translate(3px, -2px); }
 }
 .dragon.speaking .dragon-mouth { animation: talk 0.35s ease-in-out infinite; }
 

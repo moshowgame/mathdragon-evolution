@@ -36,9 +36,10 @@ export function recordQuizResult(result) {
   (result.wrongs || []).forEach(w => data.wrongs.unshift({ ...w, date: today }));
   data.wrongs = data.wrongs.slice(0, 50);
 
-  // 星星 + 连续打卡（今日首次完成星星翻倍）
+  // 星星 + 连续打卡：答对 10 题累计 1 ⭐，今日首次完成星星翻倍
   const bonus = data.lastDone !== today;
-  data.totalStars = (data.totalStars || 0) + result.stars * (bonus ? 2 : 1);
+  const starsEarned = Math.floor(result.correct / 10) * (bonus ? 2 : 1);
+  data.totalStars = (data.totalStars || 0) + starsEarned;
   if (data.lastDone === today) {
     // 已打卡，天数不变
   } else if (data.lastDone === yesterdayStr()) {
@@ -49,7 +50,7 @@ export function recordQuizResult(result) {
   data.lastDone = today;
 
   save(data);
-  return { bonus, streakDays: data.streakDays };
+  return { bonus, streakDays: data.streakDays, starsEarned };
 }
 
 /** 首页顶部数据：星星 / 连续天数 / 今日是否已打卡 */
