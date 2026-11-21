@@ -75,9 +75,27 @@ function renderQuestion() {
   const q = state.questions[state.idx];
   state.locked = false;
 
-  $('#num-a').textContent = q.a;
-  $('#num-op').textContent = q.op;
-  $('#num-b').textContent = q.b;
+  if (q.op === 'eq') {
+    // 方程题：第一行完整方程，第二行 "X = ?"（X 大写高亮，× 换色防混淆）
+    const left = {
+      'x+a': `<span class="var-x">X</span> + ${q.a}`,
+      'x-a': `<span class="var-x">X</span> − ${q.a}`,
+      'a×x': `${q.a} <span class="op-mul">×</span> <span class="var-x">X</span>`,
+      'x÷a': `<span class="var-x">X</span> ÷ ${q.a}`,
+    }[q.form];
+    $('#eq-normal-row').classList.add('hidden');
+    $('#eq-x-row').classList.remove('hidden');
+    $('#equation').classList.add('eq-mode');
+    $('#eq-full').innerHTML = `${left} <span class="op eq-sign">=</span> ${q.b}`;
+  } else {
+    $('#eq-normal-row').classList.remove('hidden');
+    $('#eq-x-row').classList.add('hidden');
+    $('#equation').classList.remove('eq-mode');
+    $('#num-a').textContent = q.a;
+    $('#num-op').textContent = q.op;
+    $('#num-b').textContent = q.b;
+    $('#num-op').classList.toggle('op-mul', q.op === '×');
+  }
   $('#answer-content').textContent = '?';
   const box = $('#answer-box');
   box.className = 'answer-box';
@@ -184,7 +202,7 @@ function answer(value, optionEl) {
     setTimeout(next, state.mode === 'challenge' ? 500 : 1400);
   } else {
     // ❌ 答错
-    state.wrongs.push({ a: q.a, b: q.b, op: q.op, answer: q.answer, wrong: value });
+    state.wrongs.push({ a: q.a, b: q.b, op: q.op, form: q.form, answer: q.answer, wrong: value });
     content.textContent = value;
     box.classList.add('wrong');
     optionEl.style.visibility = 'hidden';

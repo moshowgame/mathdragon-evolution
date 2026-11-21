@@ -182,7 +182,23 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
   text-align: center;
 }
 .op { color: var(--c-purple); }
+.op.op-mul { color: #e91e63; }
 .eq-sign { color: var(--c-ink); }
+.eq-normal-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.equation.eq-mode { flex-direction: column; }
+.eq-x-row {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 12px; width: 100%;
+}
+.eq-full { width: 100%; min-width: 0; text-align: center; }
+.eq-full .num, .num.eq-full { padding: 6px 16px; }
+.var-x {
+  display: inline-block;
+  color: #6a1b9a; background: #ede7f6;
+  border: 3px dashed #b39ddb; border-radius: 16px;
+  padding: 2px 14px;
+  transform: rotate(-4deg);
+}
 
 .answer-box {
   display: inline-flex; align-items: center; justify-content: center;
@@ -354,6 +370,34 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 .module-mult .module-name { color: #6a1b9a; }
 .module-div { background: linear-gradient(160deg, #fff 60%, #d4ecfa); }
 .module-div .module-name { color: #01579b; }
+.module-eq { background: linear-gradient(160deg, #fff 60%, #ffe8cc); }
+.module-eq .module-name { color: #e65100; }
+
+/* ---------- 学习乐园 ---------- */
+.learn-tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+.learn-tab {
+  border: 2px solid #ffd54f; background: #fff; color: #795548;
+  padding: 10px 18px; border-radius: 999px; font-size: 16px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+}
+.learn-tab:hover { transform: translateY(-2px) scale(1.04); }
+.learn-tab.active { background: #ffb300; color: #fff; border-color: #ff8f00; box-shadow: 0 4px 12px rgba(255, 143, 0, 0.4); }
+.learn-card { background: #fff; border-radius: 22px; padding: 24px 26px; box-shadow: 0 8px 24px rgba(66, 66, 66, 0.12); }
+.learn-title { font-size: 20px; font-weight: 800; color: #4e342e; text-align: center; margin-bottom: 16px; }
+.learn-steps { display: flex; flex-direction: column; gap: 12px; min-height: 120px; }
+.learn-step {
+  display: flex; align-items: center; gap: 12px; background: #fff8e1;
+  border: 2px solid #ffe082; border-radius: 16px; padding: 12px 16px;
+  opacity: 0; transform: translateY(14px) scale(0.96);
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.learn-step.show { opacity: 1; transform: translateY(0) scale(1); }
+.learn-step.final { background: #e8f5e9; border-color: #a5d6a7; }
+.step-icon { font-size: 24px; flex-shrink: 0; }
+.step-text { font-size: 15px; color: #5d4037; font-weight: 600; }
+.step-math { margin-left: auto; font-size: 20px; font-weight: 800; color: #e65100; white-space: nowrap; }
+.learn-step.final .step-math { color: #2e7d32; font-size: 24px; }
+.learn-actions { display: flex; gap: 14px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
 
 /* ---------- 家长报告 ---------- */
 .report-summary { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }

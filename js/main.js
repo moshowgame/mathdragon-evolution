@@ -11,7 +11,7 @@ import { sfx } from './audio.js';
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-const MODULE_TITLES = { add: '➕ 加法城堡', sub: '➖ 减法森林', mult: '✖️ 乘法高塔', div: '➗ 除法海岛' };
+const MODULE_TITLES = { add: '➕ 加法城堡', sub: '➖ 减法森林', mult: '✖️ 乘法高塔', div: '➗ 除法海岛', eq: '⚖️ 方程王国' };
 
 const setup = { module: null, level: null, count: 10, mode: 'normal' };
 
@@ -47,6 +47,18 @@ function init() {
     $$('#level-grid .level-card').forEach(l => l.classList.remove('selected'));
     showScreen('setup');
     sfx.pickup();
+  });
+
+  // 学习乐园
+  $('#btn-learn').addEventListener('click', async () => {
+    showScreen('learn');
+    sfx.pickup();
+    const { initLearn } = await import('./learn.js');
+    initLearn();
+  });
+  $('#btn-back-learn').addEventListener('click', () => {
+    renderHomeStats();
+    showScreen('home');
   });
 
   // 家长报告

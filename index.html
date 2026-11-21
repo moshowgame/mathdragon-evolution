@@ -41,8 +41,14 @@
           <span class="module-name">除法海岛</span>
           <span class="module-desc">平均分一分，超简单！</span>
         </button>
+        <button class="module-card module-eq" data-module="eq">
+          <span class="module-emoji">⚖️</span>
+          <span class="module-name">方程王国</span>
+          <span class="module-desc">小侦探，找出 x 是谁！</span>
+        </button>
       </div>
       <div class="home-actions">
+        <button class="btn-home-action learn" id="btn-learn">📚 学习乐园</button>
         <button class="btn-home-action challenge" id="btn-challenge">⏱️ 1分钟口算王</button>
         <button class="btn-home-action report" id="btn-report">📊 家长报告</button>
       </div>
@@ -99,10 +105,17 @@
       <div class="quiz-stage">
         <div class="question-bubble" id="question-bubble">把正确答案拖到盒子里吧！</div>
         <div class="equation" id="equation">
-          <span class="num" id="num-a">11</span>
-          <span class="op" id="num-op">+</span>
-          <span class="num" id="num-b">11</span>
-          <span class="op eq-sign">=</span>
+          <div class="eq-normal-row" id="eq-normal-row">
+            <span class="num" id="num-a">11</span>
+            <span class="op" id="num-op">+</span>
+            <span class="num" id="num-b">11</span>
+            <span class="op eq-sign">=</span>
+          </div>
+          <div class="eq-x-row hidden" id="eq-x-row">
+            <span class="num eq-full" id="eq-full"></span>
+            <span class="var-x">X</span>
+            <span class="op">=</span>
+          </div>
           <span class="answer-box" id="answer-box"><span id="answer-content">?</span></span>
         </div>
         <div class="options" id="options"></div>
@@ -152,6 +165,29 @@
         <h3 class="setup-label">📖 最近错题本</h3>
         <div id="report-wrong-list" class="wrong-list"></div>
         <button class="btn-start small" id="btn-redo-wrongs">🔄 重做这些错题</button>
+      </div>
+    </section>
+
+    <!-- 学习乐园：加减乘除与方程的动画解析 -->
+    <section id="screen-learn" class="screen hidden">
+      <header class="screen-header">
+        <button class="btn-back" id="btn-back-learn">⬅ 返回</button>
+        <h2>📚 学习乐园</h2>
+      </header>
+      <div class="learn-tabs" id="learn-tabs">
+        <button class="learn-tab active" data-op="add">➕ 加法</button>
+        <button class="learn-tab" data-op="sub">➖ 减法</button>
+        <button class="learn-tab" data-op="mult">✖️ 乘法</button>
+        <button class="learn-tab" data-op="div">➗ 除法</button>
+        <button class="learn-tab" data-op="eq">⚖️ 方程</button>
+      </div>
+      <div class="learn-card">
+        <div class="learn-title" id="learn-title">点击下面的按钮，看小火龙表演魔法！</div>
+        <div class="learn-steps" id="learn-steps"></div>
+      </div>
+      <div class="learn-actions">
+        <button class="btn-home-action challenge" id="learn-replay">🔁 重播动画</button>
+        <button class="btn-home-action challenge" id="learn-next">🔄 换一题</button>
       </div>
     </section>
   </div>

@@ -15,23 +15,49 @@ export function generateQuestions(module, level, count) {
   let guard = 0;
   while (questions.length < count && guard < count * 200) {
     guard++;
-    const q = { add: genAdd, sub: genSub, mult: genMult, div: genDiv }[module](level);
-    const key = `${q.a}${module}${q.b}`;
+    const q = { add: genAdd, sub: genSub, mult: genMult, div: genDiv, eq: genEquation }[module](level);
+    const key = `${q.a}${module}${q.b}${q.form || ''}`;
     if (seen.has(key)) continue;
     seen.add(key);
     questions.push(q);
   }
   // 题数不足时（如 10 以内组合有限）允许重复补充
   while (questions.length < count) {
-    const q = { add: genAdd, sub: genSub, mult: genMult, div: genDiv }[module](level);
+    const q = { add: genAdd, sub: genSub, mult: genMult, div: genDiv, eq: genEquation }[module](level);
     questions.push(q);
   }
   return questions.map(q => ({ ...q, options: makeOptions(q.answer) }));
 }
 
+// ---------- 简单方程（一步方程，答案为 x） ----------
+// 形式：x + a = b / x − a = b / a × x = b / x ÷ a = b
+function genEquation(level) {
+  const max = level;
+  const form = ['x+a', 'x-a', 'a×x', 'x÷a'][rand(0, 3)];
+  if (form === 'x+a') {
+    const a = rand(1, max - 1);
+    const x = rand(1, max - a);
+    return { a, b: x + a, op: 'eq', form, answer: x };
+  }
+  if (form === 'x-a') {
+    const a = rand(1, max - 1);
+    const x = rand(a + 1, max);
+    return { a, b: x - a, op: 'eq', form, answer: x };
+  }
+  if (form === 'a×x') {
+    const a = max === 100 ? rand(2, 9) : rand(2, Math.min(5, max));
+    const x = rand(1, Math.floor(max / a));
+    return { a, b: a * x, op: 'eq', form, answer: x };
+  }
+  // x ÷ a = b → x = b × a
+  const a = max === 100 ? rand(2, 9) : rand(2, Math.min(5, max));
+  const b = rand(1, Math.floor(max / a));
+  return { a, b, op: 'eq', form: 'x÷a', answer: b * a };
+}
+
 /** 由错题本记录重建题目（重做错题用） */
 export function questionsFromWrongs(wrongs) {
-  return wrongs.map(w => ({ a: w.a, b: w.b, op: w.op, answer: w.answer, options: makeOptions(w.answer) }));
+  return wrongs.map(w => ({ a: w.a, b: w.b, op: w.op, form: w.form, answer: w.answer, options: makeOptions(w.answer) }));
 }
 
 // ---------- 加法 ----------

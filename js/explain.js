@@ -9,7 +9,37 @@ export function buildExplanation(q) {
   if (q.op === '+') return explainAdd(q);
   if (q.op === '−') return explainSub(q);
   if (q.op === '×') return explainMult(q);
-  return explainDiv(q);
+  if (q.op === '÷') return explainDiv(q);
+  return explainEquation(q);
+}
+
+// ---------- 简单方程（天平法：两边同时变化） ----------
+function explainEquation({ form, a, b, answer }) {
+  const steps = [];
+  if (form === 'x+a') {
+    steps.push({ icon: '⚖️', text: `方程就是天平：两边一样重`, math: `X + ${a} = ${b}` });
+    steps.push({ icon: '➖', text: `两边同时减去 ${a}，天平还是平的`, math: `X = ${b} − ${a}` });
+    steps.push({ icon: '🎉', text: `所以`, math: `X = ${answer}`, final: true });
+    return { title: `方程解析：X + ${a} = ${b}`, steps };
+  }
+  if (form === 'x-a') {
+    steps.push({ icon: '⚖️', text: `方程就是天平：两边一样重`, math: `X − ${a} = ${b}` });
+    steps.push({ icon: '➕', text: `两边同时加回 ${a}，天平还是平的`, math: `X = ${b} + ${a}` });
+    steps.push({ icon: '🎉', text: `所以`, math: `X = ${answer}`, final: true });
+    return { title: `方程解析：X − ${a} = ${b}`, steps };
+  }
+  if (form === 'a×x') {
+    steps.push({ icon: '⚖️', text: `${a} 个 X 一起是 ${b}，那 1 个 X 是多少？`, math: `${a} × X = ${b}` });
+    steps.push({ icon: '➗', text: `两边同时除以 ${a}`, math: `X = ${b} ÷ ${a}` });
+    if (answer <= 9 && a <= 9) steps.push({ icon: '🧠', text: `想一想：${a} 乘几等于 ${b}？`, math: `${a} × ${answer} = ${b}` });
+    steps.push({ icon: '🎉', text: `所以`, math: `X = ${answer}`, final: true });
+    return { title: `方程解析：${a} × X = ${b}`, steps };
+  }
+  // x ÷ a = b
+  steps.push({ icon: '⚖️', text: `X 被平均分成 ${a} 份，每份是 ${b}`, math: `X ÷ ${a} = ${b}` });
+  steps.push({ icon: '✖️', text: `两边同时乘 ${a}，还原回 X`, math: `X = ${b} × ${a}` });
+  steps.push({ icon: '🎉', text: `所以`, math: `X = ${answer}`, final: true });
+  return { title: `方程解析：X ÷ ${a} = ${b}`, steps };
 }
 
 // ---------- 乘法 ----------
