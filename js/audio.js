@@ -161,17 +161,15 @@ export const sfx = {
   },
 };
 
-/** 中文语音播报（童趣音调） */
-export function speak(text, { pitch = 1.4, rate = 1.05 } = {}) {
+/** 语音播报（童趣音调；lang 由称赞库随机决定：zh-CN / zh-HK / en-US） */
+export function speak(text, { pitch = 1.4, rate = 1.05, lang = 'zh-CN' } = {}) {
   try {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
+    u.lang = lang;
     u.pitch = pitch;
     u.rate = rate;
-    const zhVoice = window.speechSynthesis.getVoices().find(v => /zh|Chinese|中文/i.test(v.lang + v.name));
-    if (zhVoice) u.voice = zhVoice;
     window.speechSynthesis.speak(u);
   } catch { /* 静默 */ }
 }
@@ -181,5 +179,3 @@ if ('speechSynthesis' in window) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 }
-
-export const PRAISE = ['答对啦，你太棒啦！', '哇，好厉害呀！', '完全正确，继续加油！', '真聪明，小火龙为你骄傲！'];

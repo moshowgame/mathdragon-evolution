@@ -2,7 +2,8 @@
 
 import { generateQuestions, questionsFromWrongs } from './questions.js';
 import { buildExplanation } from './explain.js';
-import { sfx, speak, PRAISE } from './audio.js';
+import { sfx, speak } from './audio.js';
+import { nextPraise } from './praise.js';
 import { setMood, playFX, playEvolution, getStage, resetPatience, grantUlt, STAGES } from './dragon.js';
 import { recordQuizResult } from './storage.js';
 
@@ -191,10 +192,12 @@ function answer(value, optionEl) {
     document.querySelectorAll('.option').forEach(o => { if (o !== optionEl) o.classList.add('faded'); });
     sfx.correct();
     if (state.mode !== 'challenge') {
-      speak(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
+      // 三语随机称赞（中文/粤语/英语，60 条轮换不重复）
+      const praise = nextPraise();
+      speak(praise.text, { lang: praise.tts });
       setMood('happy');
       playFX('confetti', 1300);
-      $('#question-bubble').textContent = pick(['哇！答对啦！', '太厉害了！', '你真棒！']);
+      $('#question-bubble').textContent = praise.text;
     }
     $('#progress-fill').style.width = state.mode === 'challenge'
       ? `${(state.timeLeft / CHALLENGE_SECONDS) * 100}%`
@@ -421,5 +424,3 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
