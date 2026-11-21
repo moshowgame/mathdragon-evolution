@@ -353,6 +353,26 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 .stat-chip.done { background: #c8e6c9; color: #1b5e20; }
 .stat-chip.todo { background: #fff9c4; color: #f57f17; }
 .home-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+.btn-home-action.install { background: linear-gradient(160deg, #fff 60%, #e3f2fd); color: #1565c0; }
+
+/* 收藏到桌面弹窗 */
+.modal {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(40, 30, 10, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  background: #fff; border-radius: 24px; padding: 26px 30px;
+  max-width: 380px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: modal-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-card h3 { margin: 0 0 14px; color: #e65100; font-size: 22px; }
+.install-steps { text-align: left; color: #5d4037; font-size: 15px; line-height: 1.8; }
+.install-steps p { margin: 8px 0; }
+@keyframes modal-pop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 .btn-home-action {
   padding: 16px 34px;
   font-family: inherit; font-size: 21px; font-weight: 900; color: #fff;

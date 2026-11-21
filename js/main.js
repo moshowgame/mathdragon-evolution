@@ -61,6 +61,66 @@ function init() {
     showScreen('home');
   });
 
+  // ---------- 收藏到桌面（PWA 安装） ----------
+  const btnInstall = $('#btn-install');
+  let deferredPrompt = null;
+
+  /** 是否已作为应用运行（安装成功后浏览器进入独立窗口模式） */
+  const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  /** 决定按钮是否显示：已安装 / 已安装过 / 已关闭引导 → 隐藏，防止重复收藏 */
+  function refreshInstallBtn() {
+    const installed = localStorage.getItem('pwa_installed') === '1';
+    const dismissed = localStorage.getItem('pwa_dismissed') === '1';
+    btnInstall.classList.toggle('hidden', isStandalone() || installed || dismissed);
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    refreshInstallBtn();
+  });
+  window.addEventListener('appinstalled', () => {
+    localStorage.setItem('pwa_installed', '1');
+    deferredPrompt = null;
+    refreshInstallBtn();
+  });
+
+  btnInstall.addEventListener('click', async () => {
+    sfx.pickup();
+    if (deferredPrompt) {
+      // 支持 PWA 安装提示的浏览器（Chrome/Edge/Android）：唤起系统安装框
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') localStorage.setItem('pwa_installed', '1');
+      deferredPrompt = null;
+      refreshInstallBtn();
+      return;
+    }
+    // iOS Safari / 其他浏览器：显示手动添加步骤
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    $('#install-steps').innerHTML = isIOS
+      ? '<p>1️⃣ 点击底部工具栏的 <strong>分享按钮</strong> <span style="font-size:20px">⬆️</span></p><p>2️⃣ 往下滑，找到 <strong>「添加到主屏幕」</strong></p><p>3️⃣ 点 <strong>「添加」</strong>，桌面就会出现小火龙啦！</p>'
+      : '<p>1️⃣ 点击浏览器地址栏右侧的 <strong>安装图标</strong>（或菜单里的「安装应用 / 添加到主屏幕」）</p><p>2️⃣ 确认安装，桌面就有小火龙的图标啦！</p>';
+    $('#install-modal').classList.remove('hidden');
+  });
+
+  $('#install-close').addEventListener('click', () => {
+    // 关闭引导后不再打扰（避免重复弹窗）
+    localStorage.setItem('pwa_dismissed', '1');
+    $('#install-modal').classList.add('hidden');
+    refreshInstallBtn();
+  });
+
+  refreshInstallBtn();
+  matchMedia('(display-mode: standalone)').addEventListener?.('change', refreshInstallBtn);
+
+  // 注册 Service Worker（离线可用；仅 https / localhost 生效）
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* 静默 */ });
+  }
+
   // 家长报告
   $('#btn-report').addEventListener('click', () => {
     renderReport();

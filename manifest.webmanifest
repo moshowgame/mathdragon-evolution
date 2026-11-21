@@ -1,0 +1,14 @@
+{
+  "name": "小火龙数学进化论 · MathDragon Evolution",
+  "short_name": "火龙数学",
+  "description": "幼儿园到小学的趣味口算训练：拖拽答题、错题解析、小龙进化",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff8e1",
+  "theme_color": "#ffb300",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

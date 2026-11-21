@@ -6,6 +6,9 @@
   <meta name="author" content="Moshow郑锴" />
   <meta name="description" content="小火龙数学进化论 MathDragon Evolution · 少儿趣味心算学习网站：加法/减法 × 10/20/100 以内，拖拽答题、凑十法解析、答对80%小火龙进化！作者 Moshow郑锴" />
   <title>小火龙数学进化论 · MathDragon Evolution</title>
+  <meta name="theme-color" content="#ffb300" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./assets/icon.svg" />
   <link rel="stylesheet" href="./css/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>" />
 </head>
@@ -51,6 +54,7 @@
         <button class="btn-home-action learn" id="btn-learn">📚 学习乐园</button>
         <button class="btn-home-action challenge" id="btn-challenge">⏱️ 1分钟口算王</button>
         <button class="btn-home-action report" id="btn-report">📊 家长报告</button>
+        <button class="btn-home-action install" id="btn-install">📲 收藏到桌面</button>
       </div>
     </section>
 
@@ -190,6 +194,15 @@
         <button class="btn-home-action challenge" id="learn-next">🔄 换一题</button>
       </div>
     </section>
+  </div>
+
+  <!-- 收藏到桌面引导弹窗 -->
+  <div class="modal hidden" id="install-modal">
+    <div class="modal-card">
+      <h3>📲 收藏到桌面</h3>
+      <div id="install-steps" class="install-steps"></div>
+      <button class="btn-start small" id="install-close">我知道啦</button>
+    </div>
   </div>
 
   <!-- 背景音乐开关 -->
