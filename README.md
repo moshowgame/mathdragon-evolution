@@ -18,23 +18,23 @@
 
 | 首页 | 答题（拖拽选项） |
 | --- | --- |
-| ![首页](docs/screenshots/01-home.jpg) | ![加法答题](docs/screenshots/02-quiz-add.jpg) |
+| ![首页](docs/screenshots/01-home.png) | ![加法答题](docs/screenshots/02-quiz-add.png) |
 
 | 错题解析（凑十法动画） | 结算页 |
 | --- | --- |
-| ![错题解析](docs/screenshots/03-quiz-explain.jpg) | ![结算页](docs/screenshots/04-result.jpg) |
+| ![错题解析](docs/screenshots/03-quiz-explain.png) | ![结算页](docs/screenshots/04-result.png) |
 
 | 1分钟口算王 | 方程王国 |
 | --- | --- |
-| ![口算王](docs/screenshots/05-challenge.jpg) | ![方程王国](docs/screenshots/06-equation.jpg) |
+| ![口算王](docs/screenshots/05-challenge.png) | ![方程王国](docs/screenshots/06-equation.png) |
 
 | 学习乐园（分步动画） | 家长报告 |
 | --- | --- |
-| ![学习乐园](docs/screenshots/07-learn.jpg) | ![家长报告](docs/screenshots/10-report.jpg) |
+| ![学习乐园](docs/screenshots/07-learn.png) | ![家长报告](docs/screenshots/10-report.png) |
 
 | 拼音王国（玩法选择） | 拼读拼字 |
 | --- | --- |
-| ![拼音王国](docs/screenshots/08-pinyin-home.jpg) | ![拼读拼字](docs/screenshots/09-pinyin-game.jpg) |
+| ![拼音王国](docs/screenshots/08-pinyin-home.png) | ![拼读拼字](docs/screenshots/09-pinyin-game.png) |
 
 ---
 
