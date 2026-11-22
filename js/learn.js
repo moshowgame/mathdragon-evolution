@@ -134,7 +134,12 @@ function genExample(op) {
       return { a, b, op: '−', answer: a - b };
     }
     case 'mult': {
-      // 表内乘法
+      // 乘法教学先从 10 以内的乘法开始（积 ≤ 10），再逐步到全表
+      if (Math.random() < 0.6) {
+        const smalls = [[2, 2], [2, 3], [3, 2], [2, 4], [4, 2], [2, 5], [5, 2], [3, 3]];
+        const [sa, sb] = smalls[rand(0, smalls.length - 1)];
+        return { a: sa, b: sb, op: '×', answer: sa * sb };
+      }
       const a = rand(2, 9);
       const b = rand(2, 9);
       return { a, b, op: '×', answer: a * b };

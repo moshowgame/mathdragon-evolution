@@ -163,23 +163,24 @@ function explainSub({ a, b, answer }) {
 
   // 退位减（个位不够减）：20 以内用破十法，100 以内用拆十法
   if (onesA < b) {
-    const tens = a - onesA; // 整十部分
-    const onesPart = onesA + 10; // 借一位变成十几
+    if (a <= 20) {
+      // 破十法：15 − 8 → 拆成 10 和 5 → 10 − 8 = 2 → 5 + 2 = 7
+      const rest = a - 10;
+      steps.push({ icon: '✂️', text: `把 ${a} 拆成 10 和 ${rest}`, math: `${a} = 10 + ${rest}` });
+      steps.push({ icon: '💥', text: `先破十：用 10 去减`, math: `10 − ${b} = ${10 - b}` });
+      steps.push({ icon: '🎉', text: `再把另一部分补回来`, math: `${rest} + ${10 - b} = ${answer}`, final: true });
+      return { title: `破十法：${a} − ${b}`, steps };
+    }
+    // 拆十法（借一当十）：23 − 8 → 拆成 20 和 13 → 13 − 8 = 5 → 20 + 5 = 25
+    const tens = a - onesA;
+    const onesPart = onesA + 10;
     steps.push({ icon: '✂️', text: `把 ${a} 拆成 ${tens} 和 ${onesPart}`, math: `${a} = ${tens} + ${onesPart}` });
-    steps.push({ icon: '💥', text: `先用十几去减（破十 / 拆十）`, math: `${onesPart} − ${b} = ${onesPart - b}` });
-    steps.push({ icon: '➕', text: `再把整十数加回来`, math: `${tens} + ${onesPart - b} = ${answer}`, final: true });
-    return { title: `${a <= 20 ? '破十法' : '拆十法'}：${a} − ${b}`, steps };
+    steps.push({ icon: '💥', text: `先用十几去减（拆十）`, math: `${onesPart} − ${b} = ${onesPart - b}` });
+    steps.push({ icon: '🎉', text: `再把整十数加回来`, math: `${tens} + ${onesPart - b} = ${answer}`, final: true });
+    return { title: `拆十法：${a} − ${b}`, steps };
   }
 
-  // 20 以内不退位：平十法（连续减）
-  if (a <= 20) {
-    steps.push({ icon: '✂️', text: `把 ${b} 拆成 ${onesA} 和 ${b - onesA}`, math: `${b} = ${onesA} + ${b - onesA}` });
-    steps.push({ icon: '🔟', text: `先减到整十`, math: `${a} − ${onesA} = 10` });
-    steps.push({ icon: '🎉', text: `再减剩下的`, math: `10 − ${b - onesA} = ${answer}`, final: true });
-    return { title: `平十法：${a} − ${b}`, steps };
-  }
-
-  // 100 以内不退位：拆数法（个位减个位，十位不变）
+  // 不退位减（个位够减）：拆数法（个位减个位，十位不变）
   const [at, ao] = splitTensOnes(a);
   steps.push({ icon: '✂️', text: `把 ${a} 拆成 ${at} 和 ${ao}`, math: `${a} = ${at} + ${ao}` });
   steps.push({ icon: '1️⃣', text: `个位先减`, math: `${ao} − ${b} = ${ao - b}` });
