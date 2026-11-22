@@ -68,8 +68,17 @@ function init() {
     showScreen('home');
   });
 
-  // 拼音王国：返回首页 + 游戏内返回按钮
+  // 拼音王国：游戏中返回玩法选择页，其余时候返回首页
   $('#btn-back-py').addEventListener('click', () => {
+    const pyGame = document.getElementById('py-game');
+    const pyFinish = document.getElementById('py-finish');
+    if (!pyGame.classList.contains('hidden') || !pyFinish.classList.contains('hidden')) {
+      pyGame.classList.add('hidden');
+      pyFinish.classList.add('hidden');
+      document.getElementById('py-home').classList.remove('hidden');
+      sfx.pickup();
+      return;
+    }
     renderHomeStats();
     showScreen('home');
   });

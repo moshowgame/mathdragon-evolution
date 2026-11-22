@@ -3,7 +3,7 @@
 import { getReport } from './storage.js';
 
 const MODULE_NAMES = { add: '加法', sub: '减法', mult: '乘法', div: '除法', eq: '方程', py: '拼音' };
-const LEVEL_NAMES = { py: { 10: '单韵母入门' } };
+const LEVEL_NAMES = { py: { 10: '单韵母', 11: '声母', 12: '复韵母', 13: '鼻韵母', 14: '整体认读', 15: '声调挑战', 20: '拼读拼字' } };
 
 /** 渲染家长报告页，返回错题列表（供"重做错题"使用） */
 export function renderReport() {
