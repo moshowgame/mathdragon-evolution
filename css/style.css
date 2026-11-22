@@ -395,6 +395,18 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 .module-py { background: linear-gradient(160deg, #fff 60%, #f3e5f5); }
 .module-py .module-name { color: #6a1b9a; }
 
+/* 版本号 + 检查更新 */
+.ver-row { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; }
+.ver-row em { font-size: 12px; color: rgba(255,255,255,0.75); font-style: normal; opacity: 0.9; }
+.ver-row button {
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  color: #fff; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.45);
+  border-radius: 999px; padding: 5px 14px; transition: all 0.15s;
+}
+.ver-row button:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+.ver-row button:active { transform: scale(0.95); }
+.ver-row button:disabled { opacity: 0.6; cursor: wait; }
+
 /* ---------- 拼音王国 ---------- */
 .py-intro { text-align: center; color: #6a1b9a; font-weight: 700; font-size: 17px; margin: 6px 0 12px; }
 .py-pools { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }

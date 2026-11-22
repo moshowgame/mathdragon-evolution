@@ -140,6 +140,28 @@ function init() {
   });
 
   refreshInstallBtn();
+
+  // 版本号 + 检查更新：清理 Service Worker 与 Cache Storage 并强制刷新
+  // 注意：只清 caches（HTTP 缓存），localStorage（星星/错题本/打卡）完全不动
+  const APP_VERSION = 'v2026.11.22';
+  $('#app-version').textContent = APP_VERSION;
+  $('#btn-hard-reload').addEventListener('click', async () => {
+    const btn = $('#btn-hard-reload');
+    btn.textContent = '⏳ 更新中…';
+    btn.disabled = true;
+    sfx.pickup();
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch { /* 尽力清理，失败也照常刷新 */ }
+    setTimeout(() => location.reload(), 400);
+  });
   matchMedia('(display-mode: standalone)').addEventListener?.('change', refreshInstallBtn);
 
   // 注册 Service Worker（离线可用；仅 https / localhost 生效）
