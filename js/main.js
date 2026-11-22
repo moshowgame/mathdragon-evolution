@@ -20,9 +20,16 @@ function init() {
   initMusic();
   renderHomeStats();
 
-  // 首页：选择模块（加/减/乘/除）
+  // 首页：选择模块（加/减/乘/除/方程/拼音）
   $$('.module-card').forEach(card => {
     card.addEventListener('click', () => {
+      if (card.dataset.module === 'py') {
+        // 拼音王国：独立玩法页
+        showScreen('pinyin');
+        sfx.pickup();
+        import('./pinyin.js').then(m => m.initPinyin());
+        return;
+      }
       setup.module = card.dataset.module;
       setup.level = null;
       setup.mode = 'normal';
@@ -57,6 +64,16 @@ function init() {
     initLearn();
   });
   $('#btn-back-learn').addEventListener('click', () => {
+    renderHomeStats();
+    showScreen('home');
+  });
+
+  // 拼音王国：返回首页 + 游戏内返回按钮
+  $('#btn-back-py').addEventListener('click', () => {
+    renderHomeStats();
+    showScreen('home');
+  });
+  document.addEventListener('py:home', () => {
     renderHomeStats();
     showScreen('home');
   });

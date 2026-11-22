@@ -2,7 +2,8 @@
 
 import { getReport } from './storage.js';
 
-const MODULE_NAMES = { add: '加法', sub: '减法', mult: '乘法', div: '除法' };
+const MODULE_NAMES = { add: '加法', sub: '减法', mult: '乘法', div: '除法', eq: '方程', py: '拼音' };
+const LEVEL_NAMES = { py: { 10: '单韵母入门' } };
 
 /** 渲染家长报告页，返回错题列表（供"重做错题"使用） */
 export function renderReport() {
@@ -27,7 +28,7 @@ export function renderReport() {
       const color = rate >= 80 ? '#66bb6a' : rate >= 60 ? '#ffb74d' : '#ef5350';
       return `
         <div class="stat-row">
-          <span class="stat-name">${MODULE_NAMES[module] || module} · ${level} 以内</span>
+          <span class="stat-name">${MODULE_NAMES[module] || module} · ${(LEVEL_NAMES[module] && LEVEL_NAMES[module][level]) || level + ' 以内'}</span>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:${rate}%;background:${color}"></div></div>
           <span class="stat-rate" style="color:${color}">${rate}%</span>
           <span class="stat-detail">（${s.correct}/${s.attempts} 题 · ${s.sessions} 轮）</span>

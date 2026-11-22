@@ -8,7 +8,9 @@ const ASSETS = [
   './css/style.css',
   './js/main.js', './js/quiz.js', './js/questions.js', './js/explain.js',
   './js/dragon.js', './js/audio.js', './js/praise.js', './js/storage.js',
-  './js/report.js', './js/learn.js',
+  './js/report.js', './js/learn.js', './js/pinyin.js',
+  './assets/audio/pinyin/a1.mp3', './assets/audio/pinyin/o1.mp3', './assets/audio/pinyin/e1.mp3',
+  './assets/audio/pinyin/i1.mp3', './assets/audio/pinyin/u1.mp3', './assets/audio/pinyin/v1.mp3',
 ];
 
 self.addEventListener('install', (e) => {

@@ -49,6 +49,11 @@
           <span class="module-name">方程王国</span>
           <span class="module-desc">小侦探，找出 x 是谁！</span>
         </button>
+        <button class="module-card module-py" data-module="py">
+          <span class="module-emoji">📢</span>
+          <span class="module-name">拼音王国</span>
+          <span class="module-desc">听一听，认一认单韵母！</span>
+        </button>
       </div>
       <div class="home-actions">
         <button class="btn-home-action learn" id="btn-learn">📚 学习乐园</button>
@@ -170,6 +175,41 @@
         <div id="report-wrong-list" class="wrong-list"></div>
         <button class="btn-start small" id="btn-redo-wrongs">🔄 重做这些错题</button>
       </div>
+    </section>
+
+    <!-- 拼音王国（单韵母入门） -->
+    <section id="screen-pinyin" class="screen hidden">
+      <header class="screen-header">
+        <button class="btn-back" id="btn-back-py">⬅ 返回</button>
+        <h2>📢 拼音王国</h2>
+      </header>
+
+      <div id="py-home">
+        <p class="py-intro">单韵母入门：a o e i u ü · 每轮 10 题</p>
+        <div class="py-modes">
+          <button class="py-mode-card" id="py-btn-listen">
+            <span class="module-emoji">👂</span>
+            <span class="module-name">听音认形</span>
+            <span class="module-desc">听发音，选出正确的拼音</span>
+          </button>
+          <button class="py-mode-card" id="py-btn-read">
+            <span class="module-emoji">👀</span>
+            <span class="module-name">看形选音</span>
+            <span class="module-desc">看拼音，找出正确的发音</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="py-game" class="hidden">
+        <div class="py-progress" id="py-progress">第 1 / 10 题</div>
+        <div class="py-target" id="py-target" title="点击重听">🔊</div>
+        <button class="btn-start small" id="py-replay">🔊 再听一次</button>
+        <div class="py-options" id="py-options"></div>
+        <div class="question-bubble" id="py-bubble">选好啦？点击卡片就知道对不对！</div>
+        <div class="py-note hidden" id="py-note"></div>
+      </div>
+
+      <div id="py-finish" class="hidden"></div>
     </section>
 
     <!-- 学习乐园：加减乘除与方程的动画解析 -->

@@ -392,6 +392,49 @@ body::after { top: 28%; left: -220px; font-size: 60px; animation-duration: 85s; 
 .module-div .module-name { color: #01579b; }
 .module-eq { background: linear-gradient(160deg, #fff 60%, #ffe8cc); }
 .module-eq .module-name { color: #e65100; }
+.module-py { background: linear-gradient(160deg, #fff 60%, #f3e5f5); }
+.module-py .module-name { color: #6a1b9a; }
+
+/* ---------- 拼音王国 ---------- */
+.py-intro { text-align: center; color: #6a1b9a; font-weight: 700; font-size: 17px; margin: 6px 0 16px; }
+.py-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 560px; margin: 0 auto; }
+.py-mode-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: #fff; border: 3px solid #e1bee7; border-radius: 22px;
+  padding: 22px 16px; cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 16px rgba(106, 27, 154, 0.12);
+  transition: transform 0.15s;
+}
+.py-mode-card:hover { transform: translateY(-4px) scale(1.03); }
+.py-progress { text-align: center; font-weight: 800; color: #8e24aa; font-size: 16px; }
+.py-target {
+  font-size: 64px; font-weight: 900; color: #6a1b9a; text-align: center;
+  background: #f3e5f5; border-radius: 24px; padding: 10px 40px; margin: 14px auto;
+  display: table; cursor: pointer; user-select: none;
+  min-width: 120px; min-height: 100px; line-height: 100px;
+}
+.py-target:active { transform: scale(0.96); }
+.py-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 420px; margin: 16px auto; }
+.py-option {
+  font-family: inherit; font-size: 34px; font-weight: 900; color: #4a148c;
+  background: #fff; border: 3px solid #ce93d8; border-radius: 18px;
+  padding: 18px 10px; cursor: pointer; transition: transform 0.12s;
+}
+.py-option:hover:not(:disabled) { transform: scale(1.05); border-color: #ab47bc; }
+.py-option.right { background: #c8e6c9; border-color: #43a047; animation: pop-in 0.3s; }
+.py-option.wrong { background: #ffcdd2; border-color: #e53935; animation: shake 0.4s; }
+.py-option:disabled { opacity: 0.9; cursor: default; }
+.py-note {
+  max-width: 480px; margin: 12px auto; text-align: center;
+  background: #fff8e1; border: 2px dashed #ffca28; border-radius: 16px;
+  padding: 10px 16px; color: #6d4c41; font-size: 16px;
+}
+.py-note strong { color: #6a1b9a; font-size: 22px; }
+.py-finish { text-align: center; background: #fff; border-radius: 22px; padding: 28px; box-shadow: 0 8px 24px rgba(106, 27, 154, 0.15); }
+.py-finish-title { font-size: 26px; font-weight: 900; color: #6a1b9a; }
+.py-finish-score { font-size: 20px; color: #4a148c; margin: 12px 0 6px; }
+.py-finish-stars { font-size: 15px; color: #f57f17; margin-bottom: 16px; }
+.py-finish-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
 /* ---------- 学习乐园 ---------- */
 .learn-tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
