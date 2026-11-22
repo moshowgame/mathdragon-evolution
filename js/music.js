@@ -1,35 +1,68 @@
 // 8-bit 芯片音乐 BGM：方波主旋律 + 三角波贝斯 + 噪声鼓组
-// 红白机风格的原创循环旋律（致敬魂斗罗那种热血感）
+// 曲目循环：《上学歌》（曲谱移植）→《种太阳》（听写版）→ 热血进行曲（魂斗罗风原创），三首无缝循环
 
 import { ensureCtx } from './audio.js';
 
 const MUSIC_KEY = 'mathdragon_music';
-const TEMPO = 160;                 // BPM
-const STEP = 60 / TEMPO / 2;       // 八分音符时长（秒）
 
 // ---------- 乐谱 ----------
-// [音符, 占用步数]，null 为休止；每小节 8 步（4/4 拍的八分音符）
-const MELODY = [
-  // A 段（热血进行）
-  ['E4',1],['E4',1],['G4',1],['A4',1],['B4',2],[null,1],['A4',1],
-  ['G4',1],['A4',1],['B4',2],[null,1],['D5',1],['B4',1],['A4',1],
-  ['E4',1],['E4',1],['G4',1],['A4',1],['B4',2],[null,1],['E5',1],
-  ['B4',1],['A4',1],['G4',1],['E4',1],['E4',2],[null,2],
-  // B 段（明亮欢快）
-  ['C5',1],[null,1],['C5',1],['B4',1],['A4',1],[null,1],['G4',1],['A4',1],
-  ['B4',1],[null,1],['B4',1],['A4',1],['G4',1],[null,1],['E4',1],['G4',1],
-  ['A4',1],['A4',1],['G4',1],['A4',1],['B4',2],[null,1],['D5',1],
-  ['D5',1],['B4',1],['G4',1],['B4',1],['C5',2],[null,2],
+// 每个 song：bpm（速度）、stepsPerBar（每小节步数：2/4=4，4/4=8，一步=八分音符）
+// melody: [音符, 占步数]，null 为休止；bass: 每小节和弦根音
+
+const SONGS = [
+  {
+    name: '上学歌',
+    bpm: 126,
+    stepsPerBar: 4,
+    // 太阳当空照 花儿对我笑 小鸟说早早早 你为什么背上小书包
+    melody: [
+      ['C5',1],['D5',1],['E5',1],['C5',1],['G4',4],
+      ['G4',1],['G4',1],['C6',1],['G4',1],['G4',4],
+      ['G4',1],['G4',1],['C6',2],['G4',1],['G4',1],['E5',2],
+      ['G4',1],['G4',1],['E5',1],['G4',1],['E5',1],['C5',1],['D5',1],['E5',1],['C5',4],
+    ],
+    bass: ['C','C','C','C','C','C','G','G','C'],
+  },
+  {
+    name: '种太阳',
+    bpm: 112,
+    stepsPerBar: 8,
+    // 啦啦啦种太阳 ×2 / 种太阳 / 到那个时候 世界每个角落 都会变得温暖又明亮（听写版，个别音可再调）
+    melody: [
+      ['G4',1],['G4',1],['A4',2],['C5',2],['A4',1],['G4',1],
+      ['G4',1],['G4',1],['A4',2],['C5',2],['A4',1],['G4',1],
+      ['G4',1],['G4',1],['A4',1],['G4',1],['C5',1],['A4',1],['C5',1],['A4',1],
+      ['C5',2],['A4',2],['G4',4],
+      ['E4',1],['E4',1],['G4',1],['E4',1],['A4',1],['G4',1],['E4',1],['G4',1],
+      ['A4',1],['G4',1],['E4',1],['G4',1],['A4',2],['C5',1],['A4',1],
+      ['E5',1],['C5',1],['A4',1],['G4',1],['E4',1],['D4',1],['E4',1],['D4',1],
+      ['C4',4],[null,4],
+    ],
+    bass: ['C','C','C','C','C','F','G','C'],
+  },
+  {
+    name: '热血进行曲',
+    bpm: 160,
+    stepsPerBar: 8,
+    // 魂斗罗风原创：A 段热血进行 + B 段明亮欢快
+    melody: [
+      // A 段（热血进行）
+      ['E4',1],['E4',1],['G4',1],['A4',1],['B4',2],[null,1],['A4',1],
+      ['G4',1],['A4',1],['B4',2],[null,1],['D5',1],['B4',1],['A4',1],
+      ['E4',1],['E4',1],['G4',1],['A4',1],['B4',2],[null,1],['E5',1],
+      ['B4',1],['A4',1],['G4',1],['E4',1],['E4',2],[null,2],
+      // B 段（明亮欢快）
+      ['C5',1],[null,1],['C5',1],['B4',1],['A4',1],[null,1],['G4',1],['A4',1],
+      ['B4',1],[null,1],['B4',1],['A4',1],['G4',1],[null,1],['E4',1],['G4',1],
+      ['A4',1],['A4',1],['G4',1],['A4',1],['B4',2],[null,1],['D5',1],
+      ['D5',1],['B4',1],['G4',1],['B4',1],['C5',2],[null,2],
+    ],
+    bass: ['E','G','E','A','C','G','A','G'],
+  },
 ];
 
-// 每小节的和弦根音（A 段 Em G Em Am / B 段 C G Am G）
-const BASS_BARS = ['E', 'G', 'E', 'A', 'C', 'G', 'A', 'G'];
-const BASS_FIFTH = { E: 'B2', G: 'D3', A: 'E3', C: 'G2' };
-
-// 鼓组节奏（每小节 8 步）：kick / snare / hat
-const DRUMS = { kick: [0, 4], snare: [2, 6], hat: [1, 3, 5, 7] };
-
-const TOTAL_STEPS = 64;
+// 和弦根音 → 实际低音 / 五音（三角波贝斯）
+const BASS_FIFTH = { C: 'G3', G: 'D4', F: 'C4', E: 'B2', A: 'E3', D: 'A3' };
 
 // ---------- 工具 ----------
 const SEMITONES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
@@ -39,7 +72,7 @@ function noteFreq(name) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-/** 把音符序列展开为「步数 → {note, dur}」映射 */
+/** 把音符序列展开为「步数 → {note, dur}」映射，并计算总步数 */
 function buildTrack(seq) {
   const map = new Map();
   let step = 0;
@@ -47,14 +80,20 @@ function buildTrack(seq) {
     if (note) map.set(step, { note, dur });
     step += dur;
   }
-  return map;
+  return { map, total: step };
 }
-const MELODY_MAP = buildTrack(MELODY);
+
+// 预处理每首曲子
+const PREPARED = SONGS.map((song) => {
+  const { map, total } = buildTrack(song.melody);
+  return { ...song, melodyMap: map, totalSteps: total };
+});
 
 // ---------- 播放器 ----------
 let playing = false;
 let schedulerTimer = null;
 let nextStepTime = 0;
+let songIndex = 0;
 let stepIndex = 0;
 let noiseBuf = null;
 let master = null;
@@ -107,31 +146,42 @@ function playKick(ctx, when) {
   osc.stop(when + 0.15);
 }
 
-/** 调度一个循环步（主旋律 + 贝斯 + 鼓） */
-function scheduleStep(ctx, index, when) {
+/** 调度当前曲子的一个步（主旋律 + 贝斯 + 鼓） */
+function scheduleStep(ctx, when) {
+  const song = PREPARED[songIndex];
+  const spb = song.stepsPerBar;
+  const stepDur = 60 / song.bpm / 2;
+
   // 主旋律（方波，8-bit 味）
-  const m = MELODY_MAP.get(index);
-  if (m) playTone(ctx, noteFreq(m.note), when, m.dur * STEP * 0.92, { type: 'square', vol: 0.085 });
+  const m = song.melodyMap.get(stepIndex);
+  if (m) playTone(ctx, noteFreq(m.note), when, m.dur * stepDur * 0.92, { type: 'square', vol: 0.085 });
 
-  // 贝斯（三角波）
-  const bar = Math.floor(index / 8);
-  const inBar = index % 8;
-  const root = BASS_BARS[bar];
-  const bassNote = (inBar === 2 || inBar === 6) ? BASS_FIFTH[root] : `${root}3`;
-  playTone(ctx, noteFreq(bassNote), when, STEP * 0.9, { type: 'triangle', vol: 0.13 });
+  // 贝斯（三角波）：小节头根音、小节中五音
+  const bar = Math.floor(stepIndex / spb) % song.bass.length;
+  const inBar = stepIndex % spb;
+  const root = song.bass[bar];
+  const bassNote = inBar === Math.floor(spb / 2) ? BASS_FIFTH[root] : `${root}3`;
+  playTone(ctx, noteFreq(bassNote), when, stepDur * 0.9, { type: 'triangle', vol: 0.13 });
 
-  // 鼓组
-  if (DRUMS.kick.includes(inBar)) playKick(ctx, when);
-  if (DRUMS.snare.includes(inBar)) playNoise(ctx, when, 0.08, { vol: 0.09, highpass: 1200 });
-  if (DRUMS.hat.includes(inBar)) playNoise(ctx, when, 0.03, { vol: 0.04, highpass: 6000 });
+  // 鼓组：kick 在正拍、snare 在反拍、hat 均匀铺
+  const half = Math.floor(spb / 2);
+  if (inBar === 0 || inBar === half) playKick(ctx, when);
+  if (inBar === Math.floor(spb / 4) || inBar === Math.floor(spb * 3 / 4)) playNoise(ctx, when, 0.08, { vol: 0.09, highpass: 1200 });
+  if (inBar % 2 === 1) playNoise(ctx, when, 0.03, { vol: 0.04, highpass: 6000 });
 }
 
 function scheduler() {
   const ctx = ensureCtx();
   while (nextStepTime < ctx.currentTime + 0.15) {
-    scheduleStep(ctx, stepIndex, nextStepTime);
-    stepIndex = (stepIndex + 1) % TOTAL_STEPS;
-    nextStepTime += STEP;
+    scheduleStep(ctx, nextStepTime);
+    const song = PREPARED[songIndex];
+    stepIndex += 1;
+    if (stepIndex >= song.totalSteps) {
+      // 当前曲子播完 → 无缝切到下一首循环
+      stepIndex = 0;
+      songIndex = (songIndex + 1) % PREPARED.length;
+    }
+    nextStepTime += 60 / song.bpm / 2;
   }
 }
 
@@ -146,6 +196,7 @@ export function startMusic() {
   playing = true;
   nextStepTime = ctx.currentTime + 0.05;
   stepIndex = 0;
+  songIndex = 0;
   schedulerTimer = setInterval(scheduler, 30);
   updateBtn();
 }
