@@ -44,8 +44,8 @@ function toneFinal(fin, tone) {
   return marked ? fin.replace(v, marked) : fin;
 }
 
-/** 拼读音节库（拼读拼字玩法）：[声母, 韵母, 声调, 例字, 文件名] */
-const SYLLABLES = [
+/** 拼读音节库（拼读拼字玩法 / 学习乐园例字）：[声母, 韵母, 声调, 例字, 文件名] */
+export const SYLLABLES = [
   ['b','a',4,'爸'], ['m','a',1,'妈'], ['d','a',4,'大'], ['h','a',3,'哈'],
   ['p','o',1,'坡'], ['m','o',1,'摸'], ['b','o',2,'伯'],
   ['g','e',1,'哥'], ['k','e',2,'颗'], ['h','e',4,'贺'], ['d','e',2,'德'],
@@ -108,7 +108,7 @@ export function playSyllable(syl) {
 }
 
 /** 显示用文本：单韵母带调，其余原样 */
-const show = (py, tone = 1) => (MARKS[py] ? MARKS[py][tone - 1] : py);
+export const show = (py, tone = 1) => (MARKS[py] ? MARKS[py][tone - 1] : py);
 
 const rand = (n) => Math.floor(Math.random() * n);
 const pickOther = (pool, exclude) => {
